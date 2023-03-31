@@ -3,6 +3,9 @@ import numpy as np
 import torch
 from utils import get_dataset, get_net, get_strategy
 from pprint import pprint
+import os
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--seed", type=int, default=1, help="random seed")
@@ -17,7 +20,7 @@ parser.add_argument(
     "--dataset_name",
     type=str,
     default="MNIST",
-    choices=["MNIST", "FashionMNIST", "SVHN", "CIFAR10"],
+    choices=["MNIST", "FashionMNIST", "SVHN", "CIFAR10", "SWDA"],
     help="dataset",
 )
 parser.add_argument(
@@ -74,10 +77,14 @@ for rd in range(1, args.n_round + 1):
     print(f"Round {rd}")
 
     # query
+    print("Querying...")
     query_idxs = strategy.query(args.n_query)
 
     # update labels
+    print("Updating labels...")
     strategy.update(query_idxs)
+
+    print("Training...")
     strategy.train()
 
     # calculate accuracy

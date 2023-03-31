@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from transformers import RobertaModel
 
 
 class Net:
@@ -21,10 +22,10 @@ class Net:
 
         loader = DataLoader(data, shuffle=True, **self.params["train_args"])
         for epoch in tqdm(range(1, n_epoch + 1), ncols=100):
-            for batch_idx, (x, y, idxs) in enumerate(loader):
-                x, y = x.to(self.device), y.to(self.device)
+            for batch_idx, (x, y, a, idxs) in enumerate(loader):
+                x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
                 optimizer.zero_grad()
-                out, e1 = self.clf(x)
+                out = self.clf(x, a)
                 loss = F.cross_entropy(out, y)
                 loss.backward()
                 optimizer.step()
@@ -161,3 +162,16 @@ class CIFAR10_Net(nn.Module):
 
     def get_embedding_dim(self):
         return 50
+
+
+class SWDA_Net(nn.Module):
+    def __init__(self, n_class=46):
+        super(SWDA_Net, self).__init__()
+        self.roberta = RobertaModel.from_pretrained("roberta-base")
+        self.classifier = nn.Linear(self.roberta.pooler.dense.out_features, n_class)
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.roberta(input_ids=input_ids, attention_mask=attention_mask)
+        pooled_output = outputs.pooler_output
+        logits = self.classifier(pooled_output)
+        return logits

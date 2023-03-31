@@ -1,7 +1,7 @@
 from torchvision import transforms
-from handlers import MNIST_Handler, SVHN_Handler, CIFAR10_Handler
-from data import get_MNIST, get_FashionMNIST, get_SVHN, get_CIFAR10
-from nets import Net, MNIST_Net, SVHN_Net, CIFAR10_Net
+from handlers import MNIST_Handler, SVHN_Handler, CIFAR10_Handler, SWDA_Handler
+from data import get_MNIST, get_FashionMNIST, get_SVHN, get_CIFAR10, get_SWDA
+from nets import Net, MNIST_Net, SVHN_Net, CIFAR10_Net, SWDA_Net
 from query_strategies import (
     RandomSampling,
     LeastConfidence,
@@ -42,6 +42,12 @@ params = {
         "test_args": {"batch_size": 1000, "num_workers": 1},
         "optimizer_args": {"lr": 0.05, "momentum": 0.3},
     },
+    "SWDA": {
+        "n_epoch": 1,
+        "train_args": {"batch_size": 1, "num_workers": 0},
+        "test_args": {"batch_size": 1, "num_workers": 0},
+        "optimizer_args": {"lr": 0.05, "momentum": 0.3},
+    },
 }
 
 
@@ -54,6 +60,8 @@ def get_handler(name):
         return SVHN_Handler
     elif name == "CIFAR10":
         return CIFAR10_Handler
+    elif name == "SWDA":
+        return SWDA_Handler
 
 
 def get_dataset(name):
@@ -65,6 +73,8 @@ def get_dataset(name):
         return get_SVHN(get_handler(name))
     elif name == "CIFAR10":
         return get_CIFAR10(get_handler(name))
+    elif name == "SWDA":
+        return get_SWDA(get_handler(name))
     else:
         raise NotImplementedError
 
@@ -78,6 +88,8 @@ def get_net(name, device):
         return Net(SVHN_Net, params[name], device)
     elif name == "CIFAR10":
         return Net(CIFAR10_Net, params[name], device)
+    elif name == "SWDA":
+        return Net(SWDA_Net, params[name], device)
     else:
         raise NotImplementedError
 
