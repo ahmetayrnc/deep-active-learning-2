@@ -15,20 +15,34 @@ class Net:
         self.device = device
 
     def train(self, data):
+        # print("Training")
         n_epoch = self.params["n_epoch"]
+        # print(f"Training for {n_epoch} epochs")
+        # print("Net init")
         self.clf = self.net().to(self.device)
+        # print("Net init done")
         self.clf.train()
+        # print("Optimizer init")
         optimizer = optim.SGD(self.clf.parameters(), **self.params["optimizer_args"])
 
+        # print("DataLoader init")
         loader = DataLoader(data, shuffle=True, **self.params["train_args"])
+        # print("DataLoader init done")
         for epoch in tqdm(range(1, n_epoch + 1), ncols=100):
             for batch_idx, (x, y, a, idxs) in enumerate(loader):
+                # print(f"batch_idx: {batch_idx}")
                 x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
+                # print("moved to device")
                 optimizer.zero_grad()
+                # print("zero_grad")
                 out = self.clf(x, a)
+                # print("through net")
                 loss = F.cross_entropy(out, y)
+                # print("loss")
                 loss.backward()
+                # print("backward")
                 optimizer.step()
+                # print("step")
 
     def predict(self, data):
         self.clf.eval()
