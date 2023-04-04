@@ -1,7 +1,6 @@
-from torchvision import transforms
-from handlers import MNIST_Handler, SVHN_Handler, CIFAR10_Handler, SWDA_Handler
-from data import get_MNIST, get_FashionMNIST, get_SVHN, get_CIFAR10, get_SWDA
-from nets import Net, MNIST_Net, SVHN_Net, CIFAR10_Net, SWDA_Net
+from handlers import MNIST_Handler, SWDA_Handler
+from data import get_MNIST, get_SWDA
+from nets import Net, MNIST_Net, SWDA_Net
 from query_strategies import (
     RandomSampling,
     LeastConfidence,
@@ -24,28 +23,10 @@ params = {
         "test_args": {"batch_size": 1000, "num_workers": 1},
         "optimizer_args": {"lr": 0.01, "momentum": 0.5},
     },
-    "FashionMNIST": {
-        "n_epoch": 10,
-        "train_args": {"batch_size": 64, "num_workers": 1},
-        "test_args": {"batch_size": 1000, "num_workers": 1},
-        "optimizer_args": {"lr": 0.01, "momentum": 0.5},
-    },
-    "SVHN": {
-        "n_epoch": 20,
-        "train_args": {"batch_size": 64, "num_workers": 1},
-        "test_args": {"batch_size": 1000, "num_workers": 1},
-        "optimizer_args": {"lr": 0.01, "momentum": 0.5},
-    },
-    "CIFAR10": {
-        "n_epoch": 20,
-        "train_args": {"batch_size": 64, "num_workers": 1},
-        "test_args": {"batch_size": 1000, "num_workers": 1},
-        "optimizer_args": {"lr": 0.05, "momentum": 0.3},
-    },
     "SWDA": {
         "n_epoch": 1,
-        "train_args": {"batch_size": 1, "num_workers": 0},
-        "test_args": {"batch_size": 1, "num_workers": 0},
+        "train_args": {"batch_size": 1, "num_workers": 1},
+        "test_args": {"batch_size": 1, "num_workers": 1},
         "optimizer_args": {"lr": 0.05, "momentum": 0.3},
     },
 }
@@ -54,12 +35,6 @@ params = {
 def get_handler(name):
     if name == "MNIST":
         return MNIST_Handler
-    elif name == "FashionMNIST":
-        return MNIST_Handler
-    elif name == "SVHN":
-        return SVHN_Handler
-    elif name == "CIFAR10":
-        return CIFAR10_Handler
     elif name == "SWDA":
         return SWDA_Handler
 
@@ -67,12 +42,6 @@ def get_handler(name):
 def get_dataset(name):
     if name == "MNIST":
         return get_MNIST(get_handler(name))
-    elif name == "FashionMNIST":
-        return get_FashionMNIST(get_handler(name))
-    elif name == "SVHN":
-        return get_SVHN(get_handler(name))
-    elif name == "CIFAR10":
-        return get_CIFAR10(get_handler(name))
     elif name == "SWDA":
         return get_SWDA(get_handler(name))
     else:
@@ -82,12 +51,6 @@ def get_dataset(name):
 def get_net(name, device):
     if name == "MNIST":
         return Net(MNIST_Net, params[name], device)
-    elif name == "FashionMNIST":
-        return Net(MNIST_Net, params[name], device)
-    elif name == "SVHN":
-        return Net(SVHN_Net, params[name], device)
-    elif name == "CIFAR10":
-        return Net(CIFAR10_Net, params[name], device)
     elif name == "SWDA":
         return Net(SWDA_Net, params[name], device)
     else:

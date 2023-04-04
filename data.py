@@ -70,42 +70,6 @@ def get_MNIST(handler):
     )
 
 
-def get_FashionMNIST(handler):
-    raw_train = datasets.FashionMNIST("./data/FashionMNIST", train=True, download=True)
-    raw_test = datasets.FashionMNIST("./data/FashionMNIST", train=False, download=True)
-    return Data(
-        raw_train.data[:40000],
-        raw_train.targets[:40000],
-        raw_test.data[:40000],
-        raw_test.targets[:40000],
-        handler,
-    )
-
-
-def get_SVHN(handler):
-    data_train = datasets.SVHN("./data/SVHN", split="train", download=True)
-    data_test = datasets.SVHN("./data/SVHN", split="test", download=True)
-    return Data(
-        data_train.data[:40000],
-        torch.from_numpy(data_train.labels)[:40000],
-        data_test.data[:40000],
-        torch.from_numpy(data_test.labels)[:40000],
-        handler,
-    )
-
-
-def get_CIFAR10(handler):
-    data_train = datasets.CIFAR10("./data/CIFAR10", train=True, download=True)
-    data_test = datasets.CIFAR10("./data/CIFAR10", train=False, download=True)
-    return Data(
-        data_train.data[:40000],
-        torch.LongTensor(data_train.targets)[:40000],
-        data_test.data[:40000],
-        torch.LongTensor(data_test.targets)[:40000],
-        handler,
-    )
-
-
 def get_SWDA(handler):
     # data path
     path = "data"

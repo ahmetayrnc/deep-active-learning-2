@@ -20,7 +20,7 @@ parser.add_argument(
     "--dataset_name",
     type=str,
     default="MNIST",
-    choices=["MNIST", "FashionMNIST", "SVHN", "CIFAR10", "SWDA"],
+    choices=["MNIST", "SWDA"],
     help="dataset",
 )
 parser.add_argument(
