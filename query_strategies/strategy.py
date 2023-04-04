@@ -1,9 +1,11 @@
+from nets import Net
+from data import Data
 
 
 class Strategy:
     def __init__(self, dataset, net):
-        self.dataset = dataset
-        self.net = net
+        self.dataset: Data = dataset
+        self.net: Net = net
 
     def query(self, n):
         pass
