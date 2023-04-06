@@ -43,7 +43,7 @@ def get_dataset(name):
     if name == "MNIST":
         return get_MNIST(get_handler(name))
     elif name == "SWDA":
-        return get_SWDA(get_handler(name))
+        return get_SWDA()
     else:
         raise NotImplementedError
 

@@ -1,7 +1,8 @@
 import argparse
 import numpy as np
 import torch
-from utils import get_dataset, get_net, get_strategy
+from data import Data
+from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
 
@@ -56,7 +57,12 @@ torch.backends.cudnn.enabled = False
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
-dataset = get_dataset(args.dataset_name)  # load dataset
+X_tr, Y_tr, X_te, Y_te, A_tr, A_te = dataset = get_dataset(
+    args.dataset_name
+)  # load dataset
+handler = get_handler(args.dataset_name)
+dataset = Data(X_tr, Y_tr, X_te, Y_te, A_tr, A_te, handler)
+
 net = get_net(args.dataset_name, device)  # load network
 strategy = get_strategy(args.strategy_name)(dataset, net)  # load strategy
 

@@ -70,7 +70,19 @@ def get_MNIST(handler):
     )
 
 
-def get_SWDA(handler):
+def get_SWDA():
+    torch_data_dir = "data/swda/torch"
+
+    if os.path.isfile(f"{torch_data_dir}/X_tr.pt"):
+        X_tr = torch.load(f"{torch_data_dir}/X_tr.pt")
+        Y_tr = torch.load(f"{torch_data_dir}/Y_tr.pt")
+        X_te = torch.load(f"{torch_data_dir}/X_te.pt")
+        Y_te = torch.load(f"{torch_data_dir}/Y_te.pt")
+        A_tr = torch.load(f"{torch_data_dir}/A_tr.pt")
+        A_te = torch.load(f"{torch_data_dir}/A_te.pt")
+
+        return X_tr, Y_tr, X_te, Y_te, A_tr, A_te
+
     # data path
     path = "data"
 
@@ -164,12 +176,14 @@ def get_SWDA(handler):
     print(
         f"Dataset shapes: {X_tr.shape}, {Y_tr.shape}, {X_te.shape}, {Y_te.shape} {A_tr.shape}, {A_te.shape}"
     )
-    return Data(
-        X_tr,
-        Y_tr,
-        X_te,
-        Y_te,
-        A_tr,
-        A_te,
-        handler,
-    )
+
+    os.makedirs(torch_data_dir, exist_ok=True)
+
+    torch.save(X_tr, f"{torch_data_dir}/X_tr.pt")
+    torch.save(Y_tr, f"{torch_data_dir}/Y_tr.pt")
+    torch.save(X_te, f"{torch_data_dir}/X_te.pt")
+    torch.save(Y_te, f"{torch_data_dir}/Y_te.pt")
+    torch.save(A_tr, f"{torch_data_dir}/A_tr.pt")
+    torch.save(A_te, f"{torch_data_dir}/A_te.pt")
+
+    return X_tr, Y_tr, X_te, Y_te, A_tr, A_te
