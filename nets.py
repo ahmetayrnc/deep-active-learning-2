@@ -132,7 +132,9 @@ class MNIST_Net(nn.Module):
 class SWDA_Net(nn.Module):
     def __init__(self, n_class=46):
         super(SWDA_Net, self).__init__()
-        self.roberta = RobertaModel.from_pretrained("roberta-base")
+        self.roberta = RobertaModel.from_pretrained(
+            "roberta-base", use_auth_token=False
+        )
         self.classifier = nn.Linear(self.roberta.pooler.dense.out_features, n_class)
 
     def forward(self, input_ids, attention_mask):

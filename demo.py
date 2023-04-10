@@ -6,8 +6,10 @@ from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
 
+# set environment variable to disable parallelism in tokenizers
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+# parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--seed", type=int, default=1, help="random seed")
 parser.add_argument(
@@ -57,12 +59,12 @@ torch.backends.cudnn.enabled = False
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
-X_tr, Y_tr, X_te, Y_te, A_tr, A_te = dataset = get_dataset(
-    args.dataset_name
-)  # load dataset
+# load dataset
+X_tr, Y_tr, X_te, Y_te, A_tr, A_te = dataset = get_dataset(args.dataset_name)
 handler = get_handler(args.dataset_name)
 dataset = Data(X_tr, Y_tr, X_te, Y_te, A_tr, A_te, handler)
 
+# load network and strategy
 net = get_net(args.dataset_name, device)  # load network
 strategy = get_strategy(args.strategy_name)(dataset, net)  # load strategy
 
@@ -79,6 +81,7 @@ strategy.train()
 preds = strategy.predict(dataset.get_test_data())
 print(f"Round 0 testing accuracy: {dataset.cal_test_acc(preds)}")
 
+# start active learning
 for rd in range(1, args.n_round + 1):
     print(f"Round {rd}")
 
