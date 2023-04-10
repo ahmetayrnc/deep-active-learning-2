@@ -133,13 +133,8 @@ class SWDA_Net(nn.Module):
     def __init__(self, n_class=46):
         super(SWDA_Net, self).__init__()
         self.n_class = n_class
-        self.config = AutoConfig.from_pretrained(
-            "distilbert-base-uncased", hidden_size=512
-        )
-        self.model = AutoModel.from_pretrained(
-            "distilbert-base-uncased", config=self.config
-        )
-        self.classifier = nn.Linear(self.config.hidden_size, n_class)
+        self.model = AutoModel.from_pretrained("distilbert-base-uncased-model")
+        self.classifier = nn.Linear(self.model.config.dim, n_class)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
