@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModel, AutoConfig
+from transformers import AutoModelForSequenceClassification
 
 
 class Net:
@@ -133,11 +133,14 @@ class SWDA_Net(nn.Module):
     def __init__(self, n_class=46):
         super(SWDA_Net, self).__init__()
         self.n_class = n_class
-        self.model = AutoModel.from_pretrained("distilbert-base-uncased-model")
-        self.classifier = nn.Linear(self.model.config.dim, n_class)
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            "distilbert-base-uncased-model",
+            num_labels=n_class,
+        )
 
     def forward(self, input_ids, attention_mask):
-        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
-        pooled_output = outputs[1]
-        logits = self.classifier(pooled_output)
-        return logits
+        outputs = self.model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+        )
+        return outputs.logits
