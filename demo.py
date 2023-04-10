@@ -59,6 +59,8 @@ torch.backends.cudnn.enabled = False
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
+print(f"Running experiments on: {device}")
+
 # load dataset
 X_tr, Y_tr, X_te, Y_te, A_tr, A_te = dataset = get_dataset(args.dataset_name)
 handler = get_handler(args.dataset_name)
