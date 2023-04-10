@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModel
+from transformers import AutoModel, AutoConfig
 
 
 class Net:
@@ -132,11 +132,17 @@ class MNIST_Net(nn.Module):
 class SWDA_Net(nn.Module):
     def __init__(self, n_class=46):
         super(SWDA_Net, self).__init__()
-        self.model = AutoModel.from_pretrained("distilbert-base-uncased-model")
-        self.classifier = nn.Linear(self.model.pooler.dense.out_features, n_class)
+        self.n_class = n_class
+        self.config = AutoConfig.from_pretrained(
+            "distilbert-base-uncased", hidden_size=512
+        )
+        self.model = AutoModel.from_pretrained(
+            "distilbert-base-uncased", config=self.config
+        )
+        self.classifier = nn.Linear(self.config.hidden_size, n_class)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
-        pooled_output = outputs.pooler_output
+        pooled_output = outputs[1]
         logits = self.classifier(pooled_output)
         return logits
