@@ -4,7 +4,8 @@ import numpy as np
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 from torchvision import datasets
-from datasets import load_dataset, load_from_disk
+
+# from datasets import load_dataset, load_from_disk
 from transformers import AutoTokenizer
 
 
@@ -83,6 +84,7 @@ def get_SWDA():
 
         return X_tr, Y_tr, X_te, Y_te, A_tr, A_te
 
+    return None
     # data path
     path = "data"
 
