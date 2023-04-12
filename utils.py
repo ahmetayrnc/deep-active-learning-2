@@ -24,9 +24,9 @@ params = {
         "optimizer_args": {"lr": 0.01, "momentum": 0.5},
     },
     "SWDA": {
-        "n_epoch": 10,
-        "train_args": {"batch_size": 64, "num_workers": 0},
-        "test_args": {"batch_size": 64, "num_workers": 0},
+        "n_epoch": 4,
+        "train_args": {"batch_size": 128, "num_workers": 0},
+        "test_args": {"batch_size": 1000, "num_workers": 0},
         "optimizer_args": {"lr": 0.05, "momentum": 0.3},
     },
 }
