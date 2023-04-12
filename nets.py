@@ -28,8 +28,8 @@ class Net:
         # print("DataLoader init")
         loader = DataLoader(data, shuffle=True, **self.params["train_args"])
         # print("DataLoader init done")
-        for epoch in tqdm(range(1, n_epoch + 1), ncols=100):
-            epoch_progress = tqdm(total=len(loader), ncols=50)
+        training_progress = tqdm(total=len(loader) * n_epoch, ncols=100)
+        for epoch in range(1, n_epoch + 1):
             for batch_idx, (x, y, a, idxs) in enumerate(loader):
                 x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
                 # print("moved to device")
@@ -43,8 +43,8 @@ class Net:
                 # print("backward")
                 optimizer.step()
                 # print("step")
-                epoch_progress.update(1)
-            epoch_progress.close()
+                training_progress.update(1)
+        training_progress.close()
 
     def predict(self, data):
         self.clf.eval()
