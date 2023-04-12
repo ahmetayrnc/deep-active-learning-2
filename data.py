@@ -4,6 +4,7 @@ import numpy as np
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 from torchvision import datasets
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 # from datasets import load_dataset, load_from_disk
 from transformers import AutoTokenizer
@@ -57,6 +58,30 @@ class Data:
 
     def cal_test_acc(self, preds):
         return 1.0 * (self.Y_test == preds).sum().item() / self.n_test
+
+    def cal_test_metrics(self, preds):
+        y_true = self.Y_test
+        y_pred = preds
+
+        accuracy = accuracy_score(y_true, y_pred)
+
+        micro_recall = recall_score(y_true, y_pred, average="micro")
+        micro_precision = precision_score(y_true, y_pred, average="micro")
+        micro_f1 = f1_score(y_true, y_pred, average="micro")
+
+        macro_recall = recall_score(y_true, y_pred, average="macro")
+        macro_precision = precision_score(y_true, y_pred, average="macro")
+        macro_f1 = f1_score(y_true, y_pred, average="macro")
+
+        return {
+            "accuracy": accuracy,
+            "micro_recall": micro_recall,
+            "micro_precision": micro_precision,
+            "micro_f1": micro_f1,
+            "macro_recall": macro_recall,
+            "macro_precision": macro_precision,
+            "macro_f1": macro_f1,
+        }
 
 
 def get_MNIST(handler):
