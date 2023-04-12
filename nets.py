@@ -57,7 +57,7 @@ class Net:
 
     def predict_prob(self, data):
         self.clf.eval()
-        probs = torch.zeros([len(data), len(np.unique(data.Y))])
+        probs = torch.zeros([len(data), len(self.net.n_class)])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         with torch.no_grad():
             for x, y, a, idxs in loader:
@@ -69,7 +69,7 @@ class Net:
 
     def predict_prob_dropout(self, data, n_drop=10):
         self.clf.train()
-        probs = torch.zeros([len(data), len(np.unique(data.Y))])
+        probs = torch.zeros([len(data), len(self.net.n_class)])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         for i in range(n_drop):
             with torch.no_grad():
@@ -83,7 +83,7 @@ class Net:
 
     def predict_prob_dropout_split(self, data, n_drop=10):
         self.clf.train()
-        probs = torch.zeros([n_drop, len(data), len(np.unique(data.Y))])
+        probs = torch.zeros([n_drop, len(data), len(self.net.n_class)])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         for i in range(n_drop):
             with torch.no_grad():
