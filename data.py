@@ -5,8 +5,6 @@ import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 from torchvision import datasets
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-
-# from datasets import load_dataset, load_from_disk
 from transformers import AutoTokenizer
 
 
@@ -82,18 +80,6 @@ class Data:
             "macro_precision": macro_precision,
             "macro_f1": macro_f1,
         }
-
-
-def get_MNIST(handler):
-    raw_train = datasets.MNIST("./data/MNIST", train=True, download=True)
-    raw_test = datasets.MNIST("./data/MNIST", train=False, download=True)
-    return Data(
-        raw_train.data[:40000],
-        raw_train.targets[:40000],
-        raw_test.data[:40000],
-        raw_test.targets[:40000],
-        handler,
-    )
 
 
 def get_SWDA():
