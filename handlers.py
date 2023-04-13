@@ -34,8 +34,4 @@ class Conversation_Handler(Dataset):
         attention_mask = self.attention_masks[idx]
         label = self.labels[idx]
 
-        return {
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "labels": label,
-        }
+        return input_ids, attention_mask, label, idx

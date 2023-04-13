@@ -29,14 +29,20 @@ class Net:
         loader = DataLoader(data, shuffle=True, **self.params["train_args"])
         # print("DataLoader init done")
         for epoch in tqdm(range(1, n_epoch + 1), ncols=100):
-            for batch_idx, (x, y, a, idxs) in enumerate(loader):
-                x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
+            for batch_idx, (input_ids, attention_mask, label, idxs) in enumerate(
+                loader
+            ):
+                input_ids, attention_mask, label = (
+                    input_ids.to(self.device),
+                    attention_mask.to(self.device),
+                    label.to(self.device),
+                )
                 # print("moved to device")
                 optimizer.zero_grad()
                 # print("zero_grad")
-                logits, embeddings = self.clf(x, a)
+                logits, embeddings = self.clf(input_ids, attention_mask)
                 # print("through net")
-                loss = F.cross_entropy(logits, y)
+                loss = F.cross_entropy(logits, label)
                 # print("loss")
                 loss.backward()
                 # print("backward")
@@ -48,9 +54,13 @@ class Net:
         preds = torch.zeros(len(data), dtype=data.Y.dtype)
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         with torch.no_grad():
-            for x, y, a, idxs in loader:
-                x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
-                logits, embeddings = self.clf(x, a)
+            for input_ids, attention_mask, label, idxs in loader:
+                input_ids, attention_mask, label = (
+                    input_ids.to(self.device),
+                    attention_mask.to(self.device),
+                    label.to(self.device),
+                )
+                logits, embeddings = self.clf(input_ids, attention_mask)
                 pred = torch.argmax(logits, dim=1)
                 preds[idxs] = pred.cpu()
         return preds
@@ -60,9 +70,13 @@ class Net:
         probs = torch.zeros([len(data), self.clf.n_class])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         with torch.no_grad():
-            for x, y, a, idxs in loader:
-                x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
-                logits, embeddings = self.clf(x, a)
+            for input_ids, attention_mask, label, idxs in loader:
+                input_ids, attention_mask, label = (
+                    input_ids.to(self.device),
+                    attention_mask.to(self.device),
+                    label.to(self.device),
+                )
+                logits, embeddings = self.clf(input_ids, attention_mask)
                 prob = F.softmax(logits, dim=1)
                 probs[idxs] = prob.cpu()
         return probs
@@ -73,9 +87,13 @@ class Net:
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         for i in range(n_drop):
             with torch.no_grad():
-                for x, y, a, idxs in loader:
-                    x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
-                    logits, embeddings = self.clf(x, a)
+                for input_ids, attention_mask, label, idxs in loader:
+                    input_ids, attention_mask, label = (
+                        input_ids.to(self.device),
+                        attention_mask.to(self.device),
+                        label.to(self.device),
+                    )
+                    logits, embeddings = self.clf(input_ids, attention_mask)
                     prob = F.softmax(logits, dim=1)
                     probs[idxs] += prob.cpu()
         probs /= n_drop
@@ -87,9 +105,13 @@ class Net:
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         for i in range(n_drop):
             with torch.no_grad():
-                for x, y, a, idxs in loader:
-                    x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
-                    logits, embeddings = self.clf(x)
+                for input_ids, attention_mask, label, idxs in loader:
+                    input_ids, attention_mask, label = (
+                        input_ids.to(self.device),
+                        attention_mask.to(self.device),
+                        label.to(self.device),
+                    )
+                    logits, embeddings = self.clf(input_ids, attention_mask)
                     prob = F.softmax(logits, dim=1)
                     probs[i][idxs] += F.softmax(logits, dim=1).cpu()
         return probs
@@ -99,9 +121,13 @@ class Net:
         embeddings = torch.zeros([len(data), self.clf.get_embedding_dim()])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         with torch.no_grad():
-            for x, y, a, idxs in loader:
-                x, y, a = x.to(self.device), y.to(self.device), a.to(self.device)
-                logits, embeddings1 = self.clf(x)
+            for input_ids, attention_mask, label, idxs in loader:
+                input_ids, attention_mask, label = (
+                    input_ids.to(self.device),
+                    attention_mask.to(self.device),
+                    label.to(self.device),
+                )
+                logits, embeddings1 = self.clf(input_ids, attention_mask)
                 embeddings[idxs] = embeddings1.cpu()
         return embeddings
 
