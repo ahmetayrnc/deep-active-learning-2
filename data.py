@@ -1,28 +1,20 @@
 import os
-import torch
 import numpy as np
-import torch.nn as nn
-from torch.nn.utils.rnn import pad_sequence
-from torchvision import datasets
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from transformers import AutoTokenizer
+import ujson
 
 
 class Data:
-    def __init__(self, X_train, Y_train, X_test, Y_test, A_train, A_test, handler):
-        self.X_train = X_train
-        self.Y_train = Y_train
-        self.X_test = X_test
-        self.Y_test = Y_test
-        self.A_train = A_train
-        self.A_test = A_test
+    def __init__(self, train, validation, test, handler):
+        self.train = train
+        self.test = test
+        self.validation = validation
 
         self.handler = handler
+        self.n_pool = len(train["input_ids"])
+        self.n_test = len(test["input_ids"])
 
-        self.n_pool = len(X_train)
-        self.n_test = len(X_test)
-
-        self.labeled_idxs = np.zeros(self.n_pool, dtype=bool)
+        self.labeled_idxs: np.ndarray = np.zeros(self.n_pool, dtype=bool)
 
     def initialize_labels(self, num):
         # generate initial labeled pool
@@ -32,33 +24,29 @@ class Data:
 
     def get_labeled_data(self):
         labeled_idxs = np.arange(self.n_pool)[self.labeled_idxs]
-        return labeled_idxs, self.handler(
-            self.X_train[labeled_idxs],
-            self.Y_train[labeled_idxs],
-            self.A_train[labeled_idxs],
-        )
+        indexed = {k: v[labeled_idxs] for k, v in self.train.items()}
+        return labeled_idxs, self.handler(indexed)
 
     def get_unlabeled_data(self):
         unlabeled_idxs = np.arange(self.n_pool)[~self.labeled_idxs]
-        return unlabeled_idxs, self.handler(
-            self.X_train[unlabeled_idxs],
-            self.Y_train[unlabeled_idxs],
-            self.A_train[unlabeled_idxs],
-        )
+        indexed = {k: v[unlabeled_idxs] for k, v in self.train.items()}
+        return unlabeled_idxs, self.handler(indexed)
 
     def get_train_data(self):
-        return self.labeled_idxs.copy(), self.handler(
-            self.X_train, self.Y_train, self.A_train
-        )
+        return self.labeled_idxs.copy(), self.handler(self.train)
 
     def get_test_data(self):
-        return self.handler(self.X_test, self.Y_test, self.A_test)
+        return self.handler(self.test)
 
     def cal_test_acc(self, preds):
-        return 1.0 * (self.Y_test == preds).sum().item() / self.n_test
+        y_true = self.test["labels"]
+        y_pred = preds
+
+        accuracy = accuracy_score(y_true, y_pred)
+        return accuracy
 
     def cal_test_metrics(self, preds):
-        y_true = self.Y_test
+        y_true = self.test["labels"]
         y_pred = preds
 
         accuracy = accuracy_score(y_true, y_pred)
@@ -83,120 +71,45 @@ class Data:
 
 
 def get_SWDA():
-    torch_data_dir = "data/swda/torch"
+    json_torch_data_dir = "data/swda/json_torch"
 
-    if os.path.isfile(f"{torch_data_dir}/X_tr.pt"):
-        X_tr = torch.load(f"{torch_data_dir}/X_tr.pt")
-        Y_tr = torch.load(f"{torch_data_dir}/Y_tr.pt")
-        X_te = torch.load(f"{torch_data_dir}/X_te.pt")
-        Y_te = torch.load(f"{torch_data_dir}/Y_te.pt")
-        A_tr = torch.load(f"{torch_data_dir}/A_tr.pt")
-        A_te = torch.load(f"{torch_data_dir}/A_te.pt")
-
-        return X_tr, Y_tr, X_te, Y_te, A_tr, A_te
-
-    return None
-    # data path
-    path = "data"
-
-    # dataset directory
-    dataset_dir = os.path.join(path, "swda")
-    print(f"Dataset: {dataset_dir}")
-    print(f"Loading dataset...")
-
-    # Load the dataset
-    if os.path.exists(dataset_dir):
-        # load the dataset from disk
-        dataset = load_from_disk(dataset_dir)
-        print("Dataset loaded from disk")
-    else:
-        # load the dataset from Hugging Face and save it to disk
-        dataset = load_dataset("silicone", "swda")
-        dataset.save_to_disk(dataset_dir)
-        print("Dataset loaded from Hugging Face and saved to disk")
-
-    # tokenizer
-    print("Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-cased", use_fast=True)
-    print("Tokenizer loaded")
-
-    max_len = 128
-
-    # Define preprocessing function
-    def preprocess(example):
-        text = example["Utterance"]
-        label = example["Label"]
-        tokens = tokenizer.encode_plus(
-            text,  # Sentence to tokenize
-            add_special_tokens=True,  # Add special tokens [CLS] and [SEP]
-            # padding="max_length",   # Pad to fixed length
-            # max_length=20,          # Max length of the sequence
-            # truncation=True,        # Truncate to max length if needed
-            return_attention_mask=True,  # Generate attention mask
-            return_tensors="pt",  # Return PyTorch tensors
-        )
-        return (
-            tokens["input_ids"][0],  # because we only have one sentence
-            torch.tensor(label),
-            tokens["attention_mask"][0],  # because we only have one sentence
+    if not os.path.isfile(f"{json_torch_data_dir}/train.json"):
+        raise FileNotFoundError(
+            f"{json_torch_data_dir}/train.json does not exist. Please run convert scripts first."
         )
 
-    print("Preprocessing training data...")
+    with open(f"{json_torch_data_dir}/train.json") as f:
+        train = ujson.load(f)
 
-    # Apply preprocessing function to dataset
-    X_tr = []
-    Y_tr = []
-    A_tr = []
-    for example in dataset["train"]:
-        x, y, a = preprocess(example)
-        X_tr.append(x)
-        Y_tr.append(y)
-        A_tr.append(a)
+    with open(f"{json_torch_data_dir}/validation.json") as f:
+        validation = ujson.load(f)
 
-    # pad first element to 128
-    X_tr[0] = nn.ConstantPad1d((0, max_len - X_tr[0].shape[0]), 0)(X_tr[0])
-    A_tr[0] = nn.ConstantPad1d((0, max_len - A_tr[0].shape[0]), 0)(A_tr[0])
+    with open(f"{json_torch_data_dir}/test.json") as f:
+        test = ujson.load(f)
 
-    # Pad sequences and create dataset
-    X_tr = pad_sequence(X_tr, batch_first=True, padding_value=0)
-    Y_tr = torch.tensor(Y_tr)
-    A_tr = pad_sequence(A_tr, batch_first=True, padding_value=0)
+    def concatanate_turns(data):
+        labels = []
+        input_ids = []
+        attention_masks = []
 
-    print("Training data preprocessed")
+        for i in range(len(data)):
+            conversation = data[i]
 
-    print("Preprocessing test data...")
-    # Apply preprocessing function to dataset
-    X_te = []
-    Y_te = []
-    A_te = []
-    for example in dataset["test"]:
-        x, y, a = preprocess(example)
-        X_te.append(x)
-        Y_te.append(y)
-        A_te.append(a)
+            labels.extend(conversation["labels"])
+            input_ids.extend(conversation["input_ids"])
+            attention_masks.extend(conversation["attention_masks"])
 
-    # pad first element to 128
-    X_te[0] = nn.ConstantPad1d((0, max_len - X_te[0].shape[0]), 0)(X_te[0])
-    A_te[0] = nn.ConstantPad1d((0, max_len - A_te[0].shape[0]), 0)(A_te[0])
+        labels = np.array(labels)
+        input_ids = np.array(input_ids)
+        attention_masks = np.array(attention_masks)
+        return {
+            "labels": labels,
+            "input_ids": input_ids,
+            "attention_masks": attention_masks,
+        }
 
-    # Pad sequences and create dataset
-    X_te = pad_sequence(X_te, batch_first=True, padding_value=0)
-    Y_te = torch.tensor(Y_te)
-    A_te = pad_sequence(A_te, batch_first=True, padding_value=0)
+    train = concatanate_turns(train)
+    validation = concatanate_turns(validation)
+    test = concatanate_turns(test)
 
-    print("Test data preprocessed")
-
-    print(
-        f"Dataset shapes: {X_tr.shape}, {Y_tr.shape}, {X_te.shape}, {Y_te.shape} {A_tr.shape}, {A_te.shape}"
-    )
-
-    os.makedirs(torch_data_dir, exist_ok=True)
-
-    torch.save(X_tr, f"{torch_data_dir}/X_tr.pt")
-    torch.save(Y_tr, f"{torch_data_dir}/Y_tr.pt")
-    torch.save(X_te, f"{torch_data_dir}/X_te.pt")
-    torch.save(Y_te, f"{torch_data_dir}/Y_te.pt")
-    torch.save(A_tr, f"{torch_data_dir}/A_tr.pt")
-    torch.save(A_te, f"{torch_data_dir}/A_te.pt")
-
-    return X_tr, Y_tr, X_te, Y_te, A_tr, A_te
+    return train, validation, test

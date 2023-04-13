@@ -80,6 +80,8 @@ for i in tqdm.tqdm(range(len(data))):
     conversation = data[i]
     input_ids, attention_masks, labels = convert_json_to_torch(
         tokenizer=tokenizer,
+        padding="max_length",
+        truncation=True,
         max_length=512,
         conversation=conversation,
     )

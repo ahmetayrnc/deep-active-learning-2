@@ -1,6 +1,6 @@
-from handlers import MNIST_Handler, SWDA_Handler
-from data import get_MNIST, get_SWDA
-from nets import Net, MNIST_Net, SWDA_Net
+from handlers import SWDA_Handler
+from data import get_SWDA
+from nets import Net, SWDA_Net
 from query_strategies import (
     RandomSampling,
     LeastConfidence,
@@ -17,12 +17,6 @@ from query_strategies import (
 )
 
 params = {
-    "MNIST": {
-        "n_epoch": 10,
-        "train_args": {"batch_size": 64, "num_workers": 1},
-        "test_args": {"batch_size": 1000, "num_workers": 1},
-        "optimizer_args": {"lr": 0.01, "momentum": 0.5},
-    },
     "SWDA": {
         "n_epoch": 4,
         "train_args": {"batch_size": 128, "num_workers": 0},
@@ -33,25 +27,21 @@ params = {
 
 
 def get_handler(name):
-    if name == "MNIST":
-        return MNIST_Handler
-    elif name == "SWDA":
+    if name == "SWDA":
         return SWDA_Handler
+    else:
+        raise NotImplementedError
 
 
 def get_dataset(name):
-    if name == "MNIST":
-        return get_MNIST(get_handler(name))
-    elif name == "SWDA":
+    if name == "SWDA":
         return get_SWDA()
     else:
         raise NotImplementedError
 
 
 def get_net(name, device):
-    if name == "MNIST":
-        return Net(MNIST_Net, params[name], device)
-    elif name == "SWDA":
+    if name == "SWDA":
         return Net(SWDA_Net, params[name], device)
     else:
         raise NotImplementedError
@@ -88,8 +78,3 @@ def get_strategy(name):
         return AdversarialDeepFool
     else:
         raise NotImplementedError
-
-
-# albl_list = [MarginSampling(X_tr, Y_tr, idxs_lb, net, handler, args),
-#              KMeansSampling(X_tr, Y_tr, idxs_lb, net, handler, args)]
-# strategy = ActiveLearningByLearning(X_tr, Y_tr, idxs_lb, net, handler, args, strategy_list=albl_list, delta=0.1)

@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 import torch
 from data import Data
+from handlers import Conversation_Handler
 from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
@@ -22,8 +23,8 @@ parser.add_argument("--n_round", type=int, default=10, help="number of rounds")
 parser.add_argument(
     "--dataset_name",
     type=str,
-    default="MNIST",
-    choices=["MNIST", "SWDA"],
+    default="SWDA",
+    choices=["SWDA"],
     help="dataset",
 )
 parser.add_argument(
@@ -62,15 +63,18 @@ device = torch.device("cuda" if use_cuda else "cpu")
 print(f"Running experiments on: {device}")
 
 # load dataset
-X_tr, Y_tr, X_te, Y_te, A_tr, A_te = dataset = get_dataset(args.dataset_name)
+print("Loading dataset...")
+train, validation, test = get_dataset(args.dataset_name)
+print(f"Dataset loaded.")
 handler = get_handler(args.dataset_name)
-dataset = Data(X_tr, Y_tr, X_te, Y_te, A_tr, A_te, handler)
+handler = Conversation_Handler
+dataset = Data(train, validation, test, handler)
 
 # load network and strategy
 net = get_net(args.dataset_name, device)  # load network
 strategy = get_strategy(args.strategy_name)(dataset, net)  # load strategy
 
-# start experiment
+# # start experiment
 dataset.initialize_labels(args.n_init_labeled)
 print(f"number of labeled pool: {args.n_init_labeled}")
 print(f"number of unlabeled pool: {dataset.n_pool-args.n_init_labeled}")
@@ -83,21 +87,21 @@ strategy.train()
 preds = strategy.predict(dataset.get_test_data())
 print(f"Round 0 testing accuracy: {dataset.cal_test_acc(preds)}")
 
-# start active learning
-for rd in range(1, args.n_round + 1):
-    print(f"Round {rd}")
+# # start active learning
+# for rd in range(1, args.n_round + 1):
+#     print(f"Round {rd}")
 
-    # query
-    print("Querying...")
-    query_idxs = strategy.query(args.n_query)
+#     # query
+#     print("Querying...")
+#     query_idxs = strategy.query(args.n_query)
 
-    # update labels
-    print("Updating labels...")
-    strategy.update(query_idxs)
+#     # update labels
+#     print("Updating labels...")
+#     strategy.update(query_idxs)
 
-    print("Training...")
-    strategy.train()
+#     print("Training...")
+#     strategy.train()
 
-    # calculate accuracy
-    preds = strategy.predict(dataset.get_test_data())
-    print(f"Round {rd} testing accuracy: {dataset.cal_test_acc(preds)}")
+#     # calculate accuracy
+#     preds = strategy.predict(dataset.get_test_data())
+#     print(f"Round {rd} testing accuracy: {dataset.cal_test_acc(preds)}")

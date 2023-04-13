@@ -111,7 +111,7 @@ class SWDA_Net(nn.Module):
         super(SWDA_Net, self).__init__()
         self.n_class = n_class
         self.model = AutoModelForSequenceClassification.from_pretrained(
-            "distilbert-base-uncased-model",
+            "distilbert-base-cased",
             num_labels=n_class,
         )
 
