@@ -1,6 +1,10 @@
-from handlers import SWDA_Handler
+from typing import Type
+from numpy import ndarray
 from data import get_SWDA
 from nets import Net, SWDA_Net
+from handlers import Conversation_Handler
+from query_strategies.strategy import Strategy
+from torch.utils.data import Dataset
 from query_strategies import (
     RandomSampling,
     LeastConfidence,
@@ -26,32 +30,34 @@ params = {
 }
 
 
-def get_handler(name):
+def get_handler(name: str) -> Type[Dataset]:
     if name == "SWDA":
-        return SWDA_Handler
+        return Conversation_Handler
     else:
         raise NotImplementedError
 
 
-def get_dataset(name):
+def get_dataset(
+    name: str,
+) -> "tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]":
     if name == "SWDA":
         return get_SWDA()
     else:
         raise NotImplementedError
 
 
-def get_net(name, device):
+def get_net(name: str, device: str) -> Net:
     if name == "SWDA":
         return Net(SWDA_Net, params[name], device)
     else:
         raise NotImplementedError
 
 
-def get_params(name):
+def get_params(name: str) -> "dict[str, object]":
     return params[name]
 
 
-def get_strategy(name):
+def get_strategy(name: str) -> Type[Strategy]:
     if name == "RandomSampling":
         return RandomSampling
     elif name == "LeastConfidence":

@@ -1,28 +1,51 @@
-from pprint import pprint
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, PreTrainedModel
+from transformers.modeling_outputs import SequenceClassifierOutput
 
-from handlers import Conversation_Handler
+from torch.utils.data import Dataset
+
+
+class SWDA_Net(nn.Module):
+    def __init__(self, n_class: int = 46) -> None:
+        super(SWDA_Net, self).__init__()
+        self.n_class = n_class
+        self.model: PreTrainedModel = (
+            AutoModelForSequenceClassification.from_pretrained(
+                "distilbert-base-cased",
+                num_labels=n_class,
+            )
+        )
+
+    def forward(
+        self, input_ids: torch.Tensor, attention_mask: torch.Tensor
+    ) -> "tuple[torch.Tensor, torch.Tensor]":
+        outputs: SequenceClassifierOutput = self.model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=True,
+        )
+        logits = outputs.logits
+        hidden_states: list[torch.FloatTensor] = outputs.hidden_states
+        last_hidden_state = hidden_states[-1]
+        return logits, last_hidden_state
 
 
 class Net:
-    def __init__(self, net, params, device):
-        self.net: SWDA_Net = net
-        self.params: dict[str, object] = params
-        self.device: str = device
+    def __init__(self, net, params: "dict[str, object]", device: str):
+        self.net = net
+        self.params = params
+        self.device = device
 
-    def train(self, data):
+    def train(self, data: Dataset):
         # print("Training")
         n_epoch = self.params["n_epoch"]
-        # print(f"Training for {n_epoch} epochs")
         # print("Net init")
-        self.clf = self.net().to(self.device)
+        self.clf: SWDA_Net = self.net().to(self.device)
         # print("Net init done")
         self.clf.train()
         # print("Optimizer init")
@@ -35,6 +58,9 @@ class Net:
             for batch_idx, (input_ids, attention_mask, label, idxs) in enumerate(
                 loader
             ):
+                input_ids: torch.FloatTensor
+                attention_mask: torch.FloatTensor
+                label: torch.IntTensor
                 input_ids, attention_mask, label = (
                     input_ids.to(self.device),
                     attention_mask.to(self.device),
@@ -52,15 +78,12 @@ class Net:
                 optimizer.step()
                 # print("step")
 
-    def predict(self, data: Conversation_Handler):
+    def predict(self, data: Dataset):
         self.clf.eval()
-
         preds = torch.zeros(len(data.labels), dtype=torch.from_numpy(data.labels).dtype)
-
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
-
         with torch.no_grad():
-            for input_ids, attention_mask, label, idxs in loader:
+            for input_ids, attention_mask, label, idxs in tqdm(loader):
                 # print("Idxs:", idxs)
                 input_ids, attention_mask, label = (
                     input_ids.to(self.device),
@@ -77,7 +100,7 @@ class Net:
 
     def predict_prob(self, data):
         self.clf.eval()
-        probs = torch.zeros([len(data), self.clf.n_class])
+        probs = torch.zeros([len(data.labels), self.clf.n_class])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         with torch.no_grad():
             for input_ids, attention_mask, label, idxs in loader:
@@ -93,7 +116,7 @@ class Net:
 
     def predict_prob_dropout(self, data, n_drop=10):
         self.clf.train()
-        probs = torch.zeros([len(data), self.clf.n_class])
+        probs = torch.zeros([len(data.labels), self.clf.n_class])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         for i in range(n_drop):
             with torch.no_grad():
@@ -111,7 +134,7 @@ class Net:
 
     def predict_prob_dropout_split(self, data, n_drop=10):
         self.clf.train()
-        probs = torch.zeros([n_drop, len(data), self.clf.n_class])
+        probs = torch.zeros([n_drop, len(data.labels), self.clf.n_class])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         for i in range(n_drop):
             with torch.no_grad():
@@ -128,7 +151,7 @@ class Net:
 
     def get_embeddings(self, data):
         self.clf.eval()
-        embeddings = torch.zeros([len(data), self.clf.get_embedding_dim()])
+        embeddings = torch.zeros([len(data.labels), self.clf.get_embedding_dim()])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         with torch.no_grad():
             for input_ids, attention_mask, label, idxs in loader:
@@ -140,24 +163,3 @@ class Net:
                 logits, embeddings1 = self.clf(input_ids, attention_mask)
                 embeddings[idxs] = embeddings1.cpu()
         return embeddings
-
-
-class SWDA_Net(nn.Module):
-    def __init__(self, n_class=46):
-        super(SWDA_Net, self).__init__()
-        self.n_class = n_class
-        self.model = AutoModelForSequenceClassification.from_pretrained(
-            "distilbert-base-cased",
-            num_labels=n_class,
-        )
-
-    def forward(self, input_ids, attention_mask):
-        outputs = self.model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            output_hidden_states=True,
-        )
-        logits = outputs.logits
-        hidden_states = outputs.hidden_states
-        last_hidden_state = hidden_states[-1]
-        return logits, last_hidden_state
