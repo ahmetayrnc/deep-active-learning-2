@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-import ujson
+import json
 
 
 class Data:
@@ -79,13 +79,13 @@ def get_SWDA():
         )
 
     with open(f"{json_torch_data_dir}/train.json") as f:
-        train = ujson.load(f)
+        train = json.load(f)
 
     with open(f"{json_torch_data_dir}/validation.json") as f:
-        validation = ujson.load(f)
+        validation = json.load(f)
 
     with open(f"{json_torch_data_dir}/test.json") as f:
-        test = ujson.load(f)
+        test = json.load(f)
 
     def concatanate_turns(data):
         labels = []

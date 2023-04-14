@@ -2,7 +2,6 @@ import argparse
 import numpy as np
 import torch
 from data import Data
-from handlers import Conversation_Handler
 from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
@@ -67,7 +66,6 @@ print("Loading dataset...")
 train, validation, test = get_dataset(args.dataset_name)
 print(f"Dataset loaded.")
 handler = get_handler(args.dataset_name)
-handler = Conversation_Handler
 dataset = Data(train, validation, test, handler)
 
 # load network and strategy
@@ -87,21 +85,21 @@ strategy.train()
 preds = strategy.predict(dataset.get_test_data())
 print(f"Round 0 testing accuracy: {dataset.cal_test_acc(preds)}")
 
-# # start active learning
-# for rd in range(1, args.n_round + 1):
-#     print(f"Round {rd}")
+# start active learning
+for rd in range(1, args.n_round + 1):
+    print(f"Round {rd}")
 
-#     # query
-#     print("Querying...")
-#     query_idxs = strategy.query(args.n_query)
+    # query
+    print("Querying...")
+    query_idxs = strategy.query(args.n_query)
 
-#     # update labels
-#     print("Updating labels...")
-#     strategy.update(query_idxs)
+    # update labels
+    print("Updating labels...")
+    strategy.update(query_idxs)
 
-#     print("Training...")
-#     strategy.train()
+    print("Training...")
+    strategy.train()
 
-#     # calculate accuracy
-#     preds = strategy.predict(dataset.get_test_data())
-#     print(f"Round {rd} testing accuracy: {dataset.cal_test_acc(preds)}")
+    # calculate accuracy
+    preds = strategy.predict(dataset.get_test_data())
+    print(f"Round {rd} testing accuracy: {dataset.cal_test_acc(preds)}")
