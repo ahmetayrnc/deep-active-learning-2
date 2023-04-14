@@ -1,3 +1,4 @@
+from pprint import pprint
 import numpy as np
 import torch
 import torch.nn as nn
@@ -7,12 +8,14 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForSequenceClassification
 
+from handlers import Conversation_Handler
+
 
 class Net:
     def __init__(self, net, params, device):
-        self.net = net
-        self.params = params
-        self.device = device
+        self.net: SWDA_Net = net
+        self.params: dict[str, object] = params
+        self.device: str = device
 
     def train(self, data):
         # print("Training")
@@ -49,12 +52,16 @@ class Net:
                 optimizer.step()
                 # print("step")
 
-    def predict(self, data):
+    def predict(self, data: Conversation_Handler):
         self.clf.eval()
-        preds = torch.zeros(len(data), dtype=data.Y.dtype)
+
+        preds = torch.zeros(len(data.labels), dtype=torch.from_numpy(data.labels).dtype)
+
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
+
         with torch.no_grad():
             for input_ids, attention_mask, label, idxs in loader:
+                # print("Idxs:", idxs)
                 input_ids, attention_mask, label = (
                     input_ids.to(self.device),
                     attention_mask.to(self.device),
@@ -62,7 +69,10 @@ class Net:
                 )
                 logits, embeddings = self.clf(input_ids, attention_mask)
                 pred = torch.argmax(logits, dim=1)
+                # print("Pred:", pred)
                 preds[idxs] = pred.cpu()
+
+        # print(preds)
         return preds
 
     def predict_prob(self, data):

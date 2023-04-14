@@ -1,6 +1,4 @@
 from torch.utils.data import Dataset
-import torch
-import numpy as np
 
 
 class SWDA_Handler(Dataset):
@@ -27,7 +25,7 @@ class Conversation_Handler(Dataset):
         self.attention_masks = data["attention_masks"]
 
     def __len__(self):
-        return len(self.data)
+        return len(self.labels)
 
     def __getitem__(self, idx):
         input_ids = self.input_ids[idx]

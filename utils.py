@@ -18,7 +18,7 @@ from query_strategies import (
 
 params = {
     "SWDA": {
-        "n_epoch": 4,
+        "n_epoch": 1,
         "train_args": {"batch_size": 128, "num_workers": 0},
         "test_args": {"batch_size": 1000, "num_workers": 0},
         "optimizer_args": {"lr": 0.05, "momentum": 0.3},
