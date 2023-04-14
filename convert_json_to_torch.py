@@ -1,15 +1,30 @@
 import json
+from typing import List, Tuple, TypedDict
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    PreTrainedTokenizerFast,
+)
 import os
 import argparse
 from pprint import pprint
 import tqdm
+from convert_df_to_json import Dialogue
 
 
-def convert_json_to_torch(tokenizer, max_length: int, conversation):
-    turns = conversation["turns"]
-    labels = conversation["labels"]
+class DialogueTorch(TypedDict):
+    dialogue_id: str
+    input_ids: List[List[int]]
+    attention_masks: List[List[int]]
+    labels: List[int]
+
+
+def convert_json_to_torch(
+    tokenizer: PreTrainedTokenizerFast, max_length: int, dialogue: Dialogue
+) -> Tuple[List[List[int]], List[List[int]], List[int]]:
+    turns = dialogue["turns"]
+    labels = dialogue["labels"]
 
     input_ids = []
     attention_masks = []
@@ -71,21 +86,19 @@ with open(f"{dataset_dir}/json/{args.split}.json") as f:
 
 # Load the tokenizer and model
 model_name = "distilbert-base-cased"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=46)
 
 # Convert the data to PyTorch tensors
 data_torch = []
 for i in tqdm.tqdm(range(len(data))):
-    conversation = data[i]
+    conversation: Dialogue = data[i]
     input_ids, attention_masks, labels = convert_json_to_torch(
         tokenizer=tokenizer,
-        padding="max_length",
-        truncation=True,
+        dialogue=conversation,
         max_length=512,
-        conversation=conversation,
     )
-    conversation_torch = {
+    conversation_torch: DialogueTorch = {
         "dialogue_id": conversation["dialogue_id"],
         "input_ids": input_ids,
         "attention_masks": attention_masks,

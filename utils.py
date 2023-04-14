@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, TypedDict
 from numpy import ndarray
 from data import get_SWDA
 from nets import Net, SWDA_Net
@@ -20,8 +20,35 @@ from query_strategies import (
     AdversarialDeepFool,
 )
 
+from typing import Dict
 
-params = {
+
+# Define the type of each field
+class TrainArgs(TypedDict):
+    batch_size: int
+    num_workers: int
+
+
+class TestArgs(TypedDict):
+    batch_size: int
+    num_workers: int
+
+
+class OptimizerArgs(TypedDict):
+    lr: float
+    momentum: float
+
+
+class DatasetArgs(TypedDict):
+    n_epoch: int
+    train_args: TrainArgs
+    test_args: TestArgs
+    optimizer_args: OptimizerArgs
+
+
+Params = Dict[str, DatasetArgs]
+
+params: Params = {
     "SWDA": {
         "n_epoch": 1,
         "train_args": {"batch_size": 16, "num_workers": 0},

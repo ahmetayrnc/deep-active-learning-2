@@ -1,3 +1,4 @@
+from typing import Type
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,14 +10,17 @@ from transformers.modeling_outputs import SequenceClassifierOutput
 
 from torch.utils.data import Dataset
 
+from utils import DatasetArgs
+
 
 class SWDA_Net(nn.Module):
     def __init__(self, n_class: int = 46) -> None:
         super(SWDA_Net, self).__init__()
         self.n_class = n_class
+        model_name = "distilbert-base-cased"
         self.model: PreTrainedModel = (
             AutoModelForSequenceClassification.from_pretrained(
-                "distilbert-base-cased",
+                model_name,
                 num_labels=n_class,
             )
         )
@@ -34,9 +38,12 @@ class SWDA_Net(nn.Module):
         last_hidden_state = hidden_states[-1]
         return logits, last_hidden_state
 
+    def get_embedding_dim(self):
+        return self.model.config.hidden_dim
+
 
 class Net:
-    def __init__(self, net, params: "dict[str, object]", device: str):
+    def __init__(self, net: Type[nn.Module], params: DatasetArgs, device: str):
         self.net = net
         self.params = params
         self.device = device
@@ -98,7 +105,7 @@ class Net:
         # print(preds)
         return preds
 
-    def predict_prob(self, data):
+    def predict_prob(self, data: Dataset):
         self.clf.eval()
         probs = torch.zeros([len(data.labels), self.clf.n_class])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
@@ -114,7 +121,7 @@ class Net:
                 probs[idxs] = prob.cpu()
         return probs
 
-    def predict_prob_dropout(self, data, n_drop=10):
+    def predict_prob_dropout(self, data: Dataset, n_drop: int = 10):
         self.clf.train()
         probs = torch.zeros([len(data.labels), self.clf.n_class])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
@@ -132,7 +139,7 @@ class Net:
         probs /= n_drop
         return probs
 
-    def predict_prob_dropout_split(self, data, n_drop=10):
+    def predict_prob_dropout_split(self, data: Dataset, n_drop: int = 10):
         self.clf.train()
         probs = torch.zeros([n_drop, len(data.labels), self.clf.n_class])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
@@ -149,7 +156,7 @@ class Net:
                     probs[i][idxs] += F.softmax(logits, dim=1).cpu()
         return probs
 
-    def get_embeddings(self, data):
+    def get_embeddings(self, data: Dataset):
         self.clf.eval()
         embeddings = torch.zeros([len(data.labels), self.clf.get_embedding_dim()])
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])

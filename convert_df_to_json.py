@@ -4,9 +4,17 @@ import os
 import argparse
 from datasets import load_dataset, load_from_disk
 from pprint import pprint
+from datasets import DatasetDict
+from typing import List, TypedDict
 
 
-def convert_to_json(dataset_dict, dataset_dir: str, split: str):
+class Dialogue(TypedDict):
+    dialogue_id: str
+    turns: List[str]
+    labels: List[str]
+
+
+def convert_to_json(dataset_dict: DatasetDict, dataset_dir: str, split: str):
     df = pd.DataFrame(dataset_dict[split])
 
     # group the dataframe by Dialogue_ID
@@ -18,7 +26,11 @@ def convert_to_json(dataset_dict, dataset_dir: str, split: str):
     # loop over the dialogue groups and construct the JSON object for each dialogue
     for dialogue_id, group in grouped:
         # create a dictionary to hold the dialogue JSON object
-        dialogue = {"dialogue_id": str(dialogue_id), "turns": [], "labels": []}
+        dialogue: Dialogue = {
+            "dialogue_id": str(dialogue_id),
+            "turns": [],
+            "labels": [],
+        }
 
         # loop over the rows in the group to construct the turns list
         for i, row in group.iterrows():
