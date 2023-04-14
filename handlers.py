@@ -1,5 +1,5 @@
 from typing import Tuple
-import numpy as np
+import torch
 from torch.utils.data import Dataset
 from data import JSONDataset
 
@@ -15,9 +15,11 @@ class Conversation_Handler(Dataset):
     def __len__(self) -> int:
         return len(self.labels)
 
-    def __getitem__(self, idx: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, int]:
-        input_ids: np.ndarray = self.input_ids[idx]
-        attention_mask: np.ndarray = self.attention_masks[idx]
-        label: np.ndarray = self.labels[idx]
+    def __getitem__(
+        self, idx: int
+    ) -> Tuple[torch.FloatTensor, torch.FloatTensor, torch.IntTensor, int]:
+        input_ids: torch.FloatTensor = self.input_ids[idx]
+        attention_mask: torch.FloatTensor = self.attention_masks[idx]
+        label: torch.IntTensor = self.labels[idx]
 
         return input_ids, attention_mask, label, idx

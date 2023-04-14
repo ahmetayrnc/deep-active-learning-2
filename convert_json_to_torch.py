@@ -10,19 +10,19 @@ import os
 import argparse
 from pprint import pprint
 import tqdm
-from convert_df_to_json import Dialogue
+from convert_datasetdict_to_json import Dialogue
 
 
 class DialogueTorch(TypedDict):
     dialogue_id: str
-    input_ids: List[List[int]]
-    attention_masks: List[List[int]]
-    labels: List[int]
+    input_ids: torch.FloatTensor
+    attention_masks: torch.FloatTensor
+    labels: torch.IntTensor
 
 
 def convert_json_to_torch(
     tokenizer: PreTrainedTokenizerFast, max_length: int, dialogue: Dialogue
-) -> Tuple[List[List[int]], List[List[int]], List[int]]:
+) -> Tuple[torch.FloatTensor, torch.FloatTensor, torch.IntTensor]:
     turns = dialogue["turns"]
     labels = dialogue["labels"]
 
@@ -57,9 +57,9 @@ def convert_json_to_torch(
     attention_masks = torch.cat(attention_masks, dim=0)
     labels = torch.tensor(labels, dtype=torch.long)
 
-    input_ids = input_ids.cpu().numpy().tolist()
-    attention_masks = attention_masks.cpu().numpy().tolist()
-    labels = labels.cpu().numpy().tolist()
+    # input_ids = input_ids.cpu().numpy().tolist()
+    # attention_masks = attention_masks.cpu().numpy().tolist()
+    # labels = labels.cpu().numpy().tolist()
 
     return input_ids, attention_masks, labels
 
@@ -90,7 +90,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=46)
 
 # Convert the data to PyTorch tensors
-data_torch = []
+data_torch: List[DialogueTorch] = []
 for i in tqdm.tqdm(range(len(data))):
     conversation: Dialogue = data[i]
     input_ids, attention_masks, labels = convert_json_to_torch(
@@ -106,15 +106,31 @@ for i in tqdm.tqdm(range(len(data))):
     }
     data_torch.append(conversation_torch)
 
-# Convert the data to JSON
-json_data_torch = json.dumps(data_torch)
+
+dialogue_ids = []
+input_ids = []
+attention_masks = []
+labels = []
+
+for item in data_torch:
+    dialogue_ids.append(item["dialogue_id"])
+    input_ids.append(item["input_ids"])
+    attention_masks.append(item["attention_masks"])
+    labels.append(item["labels"])
+
+# Convert lists to tensors
+input_ids_tensor = torch.cat(input_ids)
+attention_masks_tensor = torch.cat(attention_masks)
+labels_tensor = torch.cat(labels)
 
 # create the directory to hold the JSON files
-os.makedirs(f"{dataset_dir}/json_torch", exist_ok=True)
+os.makedirs(f"{dataset_dir}/torch", exist_ok=True)
 
-# write the JSON data to a file
-with open(f"{dataset_dir}/json_torch/{args.split}.json", "w") as f:
-    f.write(json_data_torch)
+# Save tensors
+torch.save(input_ids_tensor, f"{dataset_dir}/torch/{args.split}_input_ids.pt")
+torch.save(
+    attention_masks_tensor, f"{dataset_dir}/torch/{args.split}_attention_masks.pt"
+)
+torch.save(labels_tensor, f"{dataset_dir}/torch/{args.split}_labels.pt")
 
-# print the output file directory
-print(f"JSON file saved to {dataset_dir}/json_torch/{args.split}.json")
+print(f"tensors saved to {dataset_dir}/torch")
