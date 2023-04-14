@@ -1,7 +1,7 @@
-from typing import Type, TypedDict
+from typing import Type
 from numpy import ndarray
 from data import get_SWDA
-from nets import Net, SWDA_Net
+from nets import Net, Params, SWDA_Net
 from handlers import Conversation_Handler
 from query_strategies.strategy import Strategy
 from torch.utils.data import Dataset
@@ -20,33 +20,6 @@ from query_strategies import (
     AdversarialDeepFool,
 )
 
-from typing import Dict
-
-
-# Define the type of each field
-class TrainArgs(TypedDict):
-    batch_size: int
-    num_workers: int
-
-
-class TestArgs(TypedDict):
-    batch_size: int
-    num_workers: int
-
-
-class OptimizerArgs(TypedDict):
-    lr: float
-    momentum: float
-
-
-class DatasetArgs(TypedDict):
-    n_epoch: int
-    train_args: TrainArgs
-    test_args: TestArgs
-    optimizer_args: OptimizerArgs
-
-
-Params = Dict[str, DatasetArgs]
 
 params: Params = {
     "SWDA": {

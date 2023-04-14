@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, TypedDict, Dict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -7,10 +7,33 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForSequenceClassification, PreTrainedModel
 from transformers.modeling_outputs import SequenceClassifierOutput
-
 from torch.utils.data import Dataset
 
-from utils import DatasetArgs
+
+# Define the type of each field
+class TrainArgs(TypedDict):
+    batch_size: int
+    num_workers: int
+
+
+class TestArgs(TypedDict):
+    batch_size: int
+    num_workers: int
+
+
+class OptimizerArgs(TypedDict):
+    lr: float
+    momentum: float
+
+
+class DatasetArgs(TypedDict):
+    n_epoch: int
+    train_args: TrainArgs
+    test_args: TestArgs
+    optimizer_args: OptimizerArgs
+
+
+Params = Dict[str, DatasetArgs]
 
 
 class SWDA_Net(nn.Module):
