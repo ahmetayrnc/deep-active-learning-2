@@ -5,6 +5,7 @@ from data import Data
 from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
+import pandas as pd
 
 # set environment variable to disable parallelism in tokenizers
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -58,32 +59,56 @@ torch.backends.cudnn.enabled = False
 # device
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
-
 print(f"Running experiments on: {device}")
 
 # load dataset
 print("Loading dataset...")
 train, validation, test = get_dataset(args.dataset_name)
-print(f"Dataset loaded.")
 handler = get_handler(args.dataset_name)
 dataset = Data(train, validation, test, handler)
+print(f"Dataset loaded.")
 
 # load network and strategy
+print("Loading network and strategy...")
 net = get_net(args.dataset_name, device)  # load network
 strategy = get_strategy(args.strategy_name)(dataset, net)  # load strategy
+print(f"Network and strategy loaded.")
 
-# # start experiment
+# start experiment
 dataset.initialize_labels(args.n_init_labeled)
 print(f"number of labeled pool: {args.n_init_labeled}")
 print(f"number of unlabeled pool: {dataset.n_pool-args.n_init_labeled}")
 print(f"number of testing pool: {dataset.n_test}")
 print()
 
+# initialize results
+results = []
+experiment_name = f"dataset_name:{args.dataset_name}+n_init_labeled:{args.n_init_labeled}+n_query:{args.n_query}+n_round:{args.n_round}+seed:{args.seed}+strategy_name:{args.strategy_name}"
+
 # round 0 accuracy
 print("Round 0")
 strategy.train()
 preds = strategy.predict(dataset.get_test_data())
-print(f"Round 0 testing accuracy: {dataset.cal_test_acc(preds)}")
+metrics = dataset.cal_test_metrics(preds)
+print(f"Round 0 testing metrics: {metrics}")
+
+# information about the current round
+round_summary = {
+    "experiment": experiment_name,
+    "dataset_name": args.dataset_name,
+    "n_init_labeled": args.n_init_labeled,
+    "n_query": args.n_query,
+    "n_round": args.n_round,
+    "seed": args.seed,
+    "strategy_name": args.strategy_name,
+    "round": 0,
+}
+
+# add the metrics to the round information
+round_summary.update(metrics)
+
+# add it to the results
+results.append(round_summary)
 
 # start active learning
 for rd in range(1, args.n_round + 1):
@@ -102,4 +127,25 @@ for rd in range(1, args.n_round + 1):
 
     # calculate accuracy
     preds = strategy.predict(dataset.get_test_data())
-    print(f"Round {rd} testing accuracy: {dataset.cal_test_acc(preds)}")
+    metrics = dataset.cal_test_metrics(preds)
+    print(f"Round {rd} testing metrics: {metrics}")
+
+    # information about the current round
+    round_summary = {
+        "experiment": experiment_name,
+        "dataset_name": args.dataset_name,
+        "n_init_labeled": args.n_init_labeled,
+        "n_query": args.n_query,
+        "n_round": args.n_round,
+        "seed": args.seed,
+        "strategy_name": args.strategy_name,
+        "round": rd,
+    }
+
+    # add the metrics to the round information
+    round_summary.update(metrics)
+
+    # add it to the results
+    results.append(round_summary)
+
+results = pd.DataFrame(results)
