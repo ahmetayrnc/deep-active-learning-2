@@ -110,7 +110,7 @@ class Net:
 
     def predict(self, data: Dataset):
         self.clf.eval()
-        preds = torch.zeros(len(data.labels), dtype=torch.from_numpy(data.labels).dtype)
+        preds = torch.zeros(len(data.labels), dtype=data.labels.dtype)
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
         with torch.no_grad():
             for input_ids, attention_mask, label, idxs in tqdm(loader):
