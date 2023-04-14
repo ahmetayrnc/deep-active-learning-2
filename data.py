@@ -51,19 +51,12 @@ class Data:
 
         accuracy = accuracy_score(y_true, y_pred)
 
-        micro_recall = recall_score(y_true, y_pred, average="micro")
-        micro_precision = precision_score(y_true, y_pred, average="micro")
-        micro_f1 = f1_score(y_true, y_pred, average="micro")
-
         macro_recall = recall_score(y_true, y_pred, average="macro")
         macro_precision = precision_score(y_true, y_pred, average="macro")
         macro_f1 = f1_score(y_true, y_pred, average="macro")
 
         return {
             "accuracy": accuracy,
-            "micro_recall": micro_recall,
-            "micro_precision": micro_precision,
-            "micro_f1": micro_f1,
             "macro_recall": macro_recall,
             "macro_precision": macro_precision,
             "macro_f1": macro_f1,
