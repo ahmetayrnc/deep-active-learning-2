@@ -1,15 +1,10 @@
 import os
-from typing import Tuple, Type, TypedDict
+from typing import List, Tuple, Type, TypedDict
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-import torch
 from torch.utils.data import Dataset
-
-
-class JSONDataset(TypedDict):
-    input_ids: torch.FloatTensor  # shape: (n_samples, max_seq_len)
-    attention_masks: torch.FloatTensor  # shape: (n_samples, max_seq_len)
-    labels: torch.IntTensor  # shape: (n_samples,)
+import pickle
+from transformers import BatchEncoding
 
 
 class Metrics(TypedDict):
@@ -19,21 +14,28 @@ class Metrics(TypedDict):
     recall: float
 
 
+class Dialogue(TypedDict):
+    dialogue_id: str
+    turns: List[BatchEncoding]
+    labels: List[int]
+
+
+PickledDataset = List[Dialogue]
+
+
 class Data:
     def __init__(
         self,
-        train: JSONDataset,
-        validation: JSONDataset,
-        test: JSONDataset,
+        train: PickledDataset,
+        test: PickledDataset,
         handler: Type[Dataset],
     ):
-        self.train = train
-        self.test = test
-        self.validation = validation
+        self.train = np.array(train)
+        self.test = np.array(test)
 
         self.handler = handler
-        self.n_pool = len(train["input_ids"])
-        self.n_test = len(test["input_ids"])
+        self.n_pool = len(train)
+        self.n_test = len(test)
 
         self.labeled_idxs: np.ndarray = np.zeros(self.n_pool, dtype=bool)
 
@@ -45,12 +47,12 @@ class Data:
 
     def get_labeled_data(self) -> Tuple[np.ndarray, Dataset]:
         labeled_idxs: np.ndarray = np.arange(self.n_pool)[self.labeled_idxs]
-        indexed: JSONDataset = {k: v[labeled_idxs] for k, v in self.train.items()}
+        indexed: PickledDataset = self.train[labeled_idxs]
         return labeled_idxs, self.handler(indexed)
 
     def get_unlabeled_data(self) -> Tuple[np.ndarray, Dataset]:
         unlabeled_idxs = np.arange(self.n_pool)[~self.labeled_idxs]
-        indexed: JSONDataset = {k: v[unlabeled_idxs] for k, v in self.train.items()}
+        indexed: PickledDataset = self.train[unlabeled_idxs]
         return unlabeled_idxs, self.handler(indexed)
 
     def get_train_data(self) -> Tuple[np.ndarray, Dataset]:
@@ -59,15 +61,19 @@ class Data:
     def get_test_data(self) -> Dataset:
         return self.handler(self.test)
 
-    def cal_test_acc(self, preds) -> float:
-        y_true = self.test["labels"]
+    def cal_test_acc(self, preds: np.ndarray) -> float:
+        v_extract_labels = np.vectorize(lambda x: x["labels"], otypes=[List[int]])
+        labels_list = v_extract_labels(self.test)
+        y_true = np.concatenate(labels_list)
         y_pred = preds
 
         accuracy = accuracy_score(y_true, y_pred)
         return accuracy
 
-    def cal_test_metrics(self, preds) -> Metrics:
-        y_true = self.test["labels"]
+    def cal_test_metrics(self, preds: np.ndarray) -> Metrics:
+        v_extract_labels = np.vectorize(lambda x: x["labels"], otypes=[List[int]])
+        labels_list = v_extract_labels(self.test)
+        y_true = np.concatenate(labels_list)
         y_pred = preds
 
         accuracy = accuracy_score(y_true, y_pred)
@@ -86,23 +92,18 @@ class Data:
         }
 
 
-def get_SWDA() -> Tuple[JSONDataset, JSONDataset, JSONDataset]:
-    torch_data_dir = "data/swda/torch"
+def get_SWDA() -> Tuple[List[Dialogue], List[Dialogue]]:
+    pickle_data_dir = "data/swda/pickle"
 
-    if not os.path.isfile(f"{torch_data_dir}/train_input_ids.pt"):
+    if not os.path.isfile(f"{pickle_data_dir}/train.pickle"):
         raise FileNotFoundError(
-            f"{torch_data_dir}/train_input_ids.pt does not exist. Please run convert scripts first."
+            f"{pickle_data_dir}/train.pickle does not exist. Please run convert scripts first."
         )
 
-    datasets: list[JSONDataset] = []
-    for split in ["train", "validation", "test"]:
-        input_ids = torch.load(f"{torch_data_dir}/{split}_input_ids.pt")
-        attention_masks = torch.load(f"{torch_data_dir}/{split}_attention_masks.pt")
-        labels = torch.load(f"{torch_data_dir}/{split}_labels.pt")
-        dataset = JSONDataset(
-            input_ids=input_ids, attention_masks=attention_masks, labels=labels
-        )
-        datasets.append(dataset)
+    with open(f"{pickle_data_dir}/train.pickle", "rb") as f:
+        train = pickle.load(f)
 
-    train, validation, test = datasets
-    return train, validation, test
+    with open(f"{pickle_data_dir}/test.pickle", "rb") as f:
+        test = pickle.load(f)
+
+    return train, test

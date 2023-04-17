@@ -1,8 +1,8 @@
 from typing import Type
 from numpy import ndarray
 from data import get_SWDA
-from nets import Net, Params, SWDA_Net
-from handlers import Conversation_Handler
+from nets import Net, Params, HierarchicalDialogueActClassifier
+from handlers import DialogueDataset
 from query_strategies.strategy import Strategy
 from torch.utils.data import Dataset
 from query_strategies import (
@@ -24,8 +24,8 @@ from query_strategies import (
 params: Params = {
     "SWDA": {
         "n_epoch": 1,
-        "train_args": {"batch_size": 16, "num_workers": 0},
-        "test_args": {"batch_size": 128, "num_workers": 0},
+        "train_args": {"batch_size": 1, "num_workers": 0},
+        "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 0.05, "momentum": 0.3},
     },
 }
@@ -33,7 +33,7 @@ params: Params = {
 
 def get_handler(name: str) -> Type[Dataset]:
     if name == "SWDA":
-        return Conversation_Handler
+        return DialogueDataset
     else:
         raise NotImplementedError
 
@@ -49,7 +49,7 @@ def get_dataset(
 
 def get_net(name: str, device: str) -> Net:
     if name == "SWDA":
-        return Net(SWDA_Net, params[name], device)
+        return Net(HierarchicalDialogueActClassifier, params[name], device)
     else:
         raise NotImplementedError
 

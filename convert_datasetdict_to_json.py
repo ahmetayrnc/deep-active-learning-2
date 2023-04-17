@@ -8,9 +8,15 @@ from datasets import DatasetDict
 from typing import List, TypedDict
 
 
+class Turn(TypedDict):
+    idx: str
+    content: str
+    user: str
+
+
 class Dialogue(TypedDict):
     dialogue_id: str
-    turns: List[str]
+    turns: List[Turn]
     labels: List[str]
 
 
