@@ -70,37 +70,44 @@ def convert_to_json(
     print(f"pickle file saved to {dataset_dir}/pickle/{split}.pickle")
 
 
-# parse arguments
-parser = argparse.ArgumentParser()
+def main(args_dict):
+    dataset_dir = "data/swda"
 
-parser.add_argument(
-    "--split",
-    type=str,
-    default="train",
-    choices=["train", "validation", "test"],
-    help="split",
-)
+    # Load the dataset
+    if os.path.exists(dataset_dir):
+        # load the dataset from disk
+        dataset = load_from_disk(dataset_dir)
+        print("Dataset loaded from disk")
+    else:
+        # load the dataset from Hugging Face and save it to disk
+        dataset = load_dataset("silicone", "swda")
+        dataset.save_to_disk(dataset_dir)
+        print("Dataset loaded from Hugging Face and saved to disk")
 
-args = parser.parse_args()
-pprint(vars(args))
-print()
+    pretrained_model_name = "distilbert-base-uncased"
+    tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name, use_fast=True)
 
-dataset_dir = "data/swda"
+    convert_to_json(
+        dataset_dict=dataset,
+        tokenizer=tokenizer,
+        dataset_dir=dataset_dir,
+        split=args_dict["split"],
+    )
 
-# Load the dataset
-if os.path.exists(dataset_dir):
-    # load the dataset from disk
-    dataset = load_from_disk(dataset_dir)
-    print("Dataset loaded from disk")
-else:
-    # load the dataset from Hugging Face and save it to disk
-    dataset = load_dataset("silicone", "swda")
-    dataset.save_to_disk(dataset_dir)
-    print("Dataset loaded from Hugging Face and saved to disk")
 
-pretrained_model_name = "distilbert-base-uncased"
-tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name, use_fast=True)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
 
-convert_to_json(
-    dataset_dict=dataset, tokenizer=tokenizer, dataset_dir=dataset_dir, split=args.split
-)
+    parser.add_argument(
+        "--split",
+        type=str,
+        default="train",
+        choices=["train", "validation", "test"],
+        help="split",
+    )
+
+    args = parser.parse_args()
+    args_dict = vars(args)
+    pprint(args_dict)
+
+    main(args_dict)
