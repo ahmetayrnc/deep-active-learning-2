@@ -8,13 +8,13 @@ import os
 import pandas as pd
 
 
-def main(args):
+def main(args: dict):
     # set environment variable to disable parallelism in tokenizers
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     # fix random seed
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    np.random.seed(args["seed"])
+    torch.manual_seed(args["seed"])
     torch.backends.cudnn.enabled = False
 
     # device
@@ -24,27 +24,27 @@ def main(args):
 
     # load dataset
     print("Loading dataset...")
-    train, test = get_dataset(args.dataset_name)
-    handler = get_handler(args.dataset_name)
+    train, test = get_dataset(args["dataset_name"])
+    handler = get_handler(args["dataset_name"])
     dataset = Data(train, test, handler)
     print(f"Dataset loaded.")
 
     # load network and strategy
     print("Loading network and strategy...")
-    net = get_net(args.dataset_name, device)  # load network
-    strategy = get_strategy(args.strategy_name)(dataset, net)  # load strategy
+    net = get_net(args["dataset_name"], device)  # load network
+    strategy = get_strategy(args["strategy_name"])(dataset, net)  # load strategy
     print(f"Network and strategy loaded.")
 
     # start experiment
-    dataset.initialize_labels(args.n_init_labeled)
-    print(f"number of labeled pool: {args.n_init_labeled}")
-    print(f"number of unlabeled pool: {dataset.n_pool-args.n_init_labeled}")
+    dataset.initialize_labels(args["n_init_labeled"])
+    print(f"number of labeled pool: {args['n_init_labeled']}")
+    print(f"number of unlabeled pool: {dataset.n_pool-args['n_init_labeled']}")
     print(f"number of testing pool: {dataset.n_test}")
     print()
 
     # initialize results
     results = []
-    experiment_name = f"dataset_name:{args.dataset_name}+n_init_labeled:{args.n_init_labeled}+n_query:{args.n_query}+n_round:{args.n_round}+seed:{args.seed}+strategy_name:{args.strategy_name}"
+    experiment_name = f"dataset_name:{args['dataset_name']}+n_init_labeled:{args['n_init_labeled']}+n_query:{args['n_query']}+n_round:{args['n_round']}+seed:{args['seed']}+strategy_name:{args['strategy_name']}"
 
     # round 0 accuracy
     print("Round 0")
@@ -53,31 +53,22 @@ def main(args):
     metrics = dataset.cal_test_metrics(preds)
     print(f"Round 0 testing metrics: {metrics}")
 
-    # information about the current round
+    # collect information about the round
     round_summary = {
         "experiment": experiment_name,
-        "dataset_name": args.dataset_name,
-        "n_init_labeled": args.n_init_labeled,
-        "n_query": args.n_query,
-        "n_round": args.n_round,
-        "seed": args.seed,
-        "strategy_name": args.strategy_name,
         "round": 0,
     }
-
-    # add the metrics to the round information
+    round_summary.update(args)
     round_summary.update(metrics)
-
-    # add it to the results
     results.append(round_summary)
 
     # start active learning
-    for rd in range(1, args.n_round + 1):
+    for rd in range(1, args["n_round"] + 1):
         print(f"Round {rd}")
 
         # query
         print("Querying...")
-        query_idxs = strategy.query(args.n_query)
+        query_idxs = strategy.query(args["n_query"])
 
         # update labels
         print("Updating labels...")
@@ -91,22 +82,13 @@ def main(args):
         metrics = dataset.cal_test_metrics(preds)
         print(f"Round {rd} testing metrics: {metrics}")
 
-        # information about the current round
+        # collect information about the round
         round_summary = {
             "experiment": experiment_name,
-            "dataset_name": args.dataset_name,
-            "n_init_labeled": args.n_init_labeled,
-            "n_query": args.n_query,
-            "n_round": args.n_round,
-            "seed": args.seed,
-            "strategy_name": args.strategy_name,
             "round": rd,
         }
-
-        # add the metrics to the round information
+        round_summary.update(args)
         round_summary.update(metrics)
-
-        # add it to the results
         results.append(round_summary)
 
     results = pd.DataFrame(results)
@@ -153,8 +135,9 @@ if __name__ == "__main__":
         ],
         help="query strategy",
     )
-    args = parser.parse_args()
-    pprint(vars(args))
-    print()
 
-    main(args)
+    args = parser.parse_args()
+    args_dict = vars(args)
+    pprint(args_dict)
+
+    main(args_dict)
