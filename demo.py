@@ -8,7 +8,7 @@ import os
 import pandas as pd
 
 
-def main(args: dict):
+def main(args: dict) -> pd.DataFrame:
     # set environment variable to disable parallelism in tokenizers
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -92,6 +92,7 @@ def main(args: dict):
         results.append(round_summary)
 
     results = pd.DataFrame(results)
+    return results
 
 
 if __name__ == "__main__":
