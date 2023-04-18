@@ -3,8 +3,8 @@ from typing import List, Tuple, Type, TypedDict
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.utils.data import Dataset
-import pickle
-from transformers import BatchEncoding
+from datasets import load_dataset, load_from_disk, Dataset as HF_Dataset
+import pandas as pd
 
 
 class Metrics(TypedDict):
@@ -14,28 +14,22 @@ class Metrics(TypedDict):
     recall: float
 
 
-class Dialogue(TypedDict):
-    dialogue_id: str
-    turns: List[BatchEncoding]
-    labels: List[int]
-
-
-PickledDataset = List[Dialogue]
+MyDataset = Tuple[List[List[str]], List[List[int]]]
 
 
 class Data:
     def __init__(
         self,
-        train: PickledDataset,
-        test: PickledDataset,
+        train: MyDataset,
+        test: MyDataset,
         handler: Type[Dataset],
     ):
-        self.train = np.array(train)
-        self.test = np.array(test)
+        self.train = np.array(train[0], dtype=object), np.array(train[1], dtype=object)
+        self.test = np.array(test[0], dtype=object), np.array(test[1], dtype=object)
 
         self.handler = handler
-        self.n_pool = len(train)
-        self.n_test = len(test)
+        self.n_pool = len(train[1])
+        self.n_test = len(test[1])
 
         self.labeled_idxs: np.ndarray = np.zeros(self.n_pool, dtype=bool)
 
@@ -47,12 +41,15 @@ class Data:
 
     def get_labeled_data(self) -> Tuple[np.ndarray, Dataset]:
         labeled_idxs: np.ndarray = np.arange(self.n_pool)[self.labeled_idxs]
-        indexed: PickledDataset = self.train[labeled_idxs]
+        indexed: MyDataset = self.train[0][labeled_idxs], self.train[1][labeled_idxs]
         return labeled_idxs, self.handler(indexed)
 
     def get_unlabeled_data(self) -> Tuple[np.ndarray, Dataset]:
         unlabeled_idxs = np.arange(self.n_pool)[~self.labeled_idxs]
-        indexed: PickledDataset = self.train[unlabeled_idxs]
+        indexed: MyDataset = (
+            self.train[0][unlabeled_idxs],
+            self.train[1][unlabeled_idxs],
+        )
         return unlabeled_idxs, self.handler(indexed)
 
     def get_train_data(self) -> Tuple[np.ndarray, Dataset]:
@@ -92,18 +89,39 @@ class Data:
         }
 
 
-def get_SWDA() -> Tuple[List[Dialogue], List[Dialogue]]:
-    pickle_data_dir = "data/swda/pickle"
+def get_SWDA() -> Tuple[MyDataset, MyDataset]:
+    def convert(dataset: HF_Dataset) -> MyDataset:
+        def process_group(group):
+            group_df = pd.DataFrame(group[1])
+            if len(group_df) > 512:
+                print(f"skipped dialogue: {group[0]}")
+                return None
 
-    if not os.path.isfile(f"{pickle_data_dir}/train.pickle"):
-        raise FileNotFoundError(
-            f"{pickle_data_dir}/train.pickle does not exist. Please run convert scripts first."
-        )
+            turns = group_df["Utterance"].tolist()
+            labels = group_df["Label"].tolist()
 
-    with open(f"{pickle_data_dir}/train.pickle", "rb") as f:
-        train = pickle.load(f)
+            return turns, labels
 
-    with open(f"{pickle_data_dir}/test.pickle", "rb") as f:
-        test = pickle.load(f)
+        df = dataset.to_pandas()
+        grouped = df.groupby("Dialogue_ID")
+        results = list(map(process_group, grouped))
+        all_turns, all_labels = zip(*[r for r in results if r is not None])
+        return all_turns, all_labels
+
+    dataset_dir = "data/swda"
+
+    # Load the dataset
+    if os.path.exists(dataset_dir):
+        # load the dataset from disk
+        dataset = load_from_disk(dataset_dir)
+        print("Dataset loaded from disk")
+    else:
+        # load the dataset from Hugging Face and save it to disk
+        dataset = load_dataset("silicone", "swda")
+        dataset.save_to_disk(dataset_dir)
+        print("Dataset loaded from Hugging Face and saved to disk")
+
+    train = convert(dataset["train"])
+    test = convert(dataset["test"])
 
     return train, test

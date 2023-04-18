@@ -24,6 +24,8 @@ from query_strategies import (
 params: Params = {
     "SWDA": {
         "n_epoch": 1,
+        "n_labels": 46,
+        "model_name": "distilbert-base-cased",
         "train_args": {"batch_size": 1, "num_workers": 0},
         "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 0.05, "momentum": 0.3},

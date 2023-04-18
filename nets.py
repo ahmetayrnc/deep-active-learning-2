@@ -8,12 +8,12 @@ from transformers import (
     AutoModelForSequenceClassification,
     PreTrainedModel,
     AutoModel,
-    BatchEncoding,
+    AutoTokenizer,
 )
 from transformers.modeling_outputs import SequenceClassifierOutput
 from torch.utils.data import Dataset
-from data import Dialogue
 import numpy as np
+from data import MyDataset
 from handlers import string_collator
 from sklearn.metrics import classification_report
 
@@ -36,6 +36,8 @@ class OptimizerArgs(TypedDict):
 
 class DatasetArgs(TypedDict):
     n_epoch: int
+    n_labels: int
+    model_name: str
     train_args: TrainArgs
     test_args: TestArgs
     optimizer_args: OptimizerArgs
@@ -74,30 +76,38 @@ class SWDA_Net(nn.Module):
 
 
 class HierarchicalDialogueActClassifier(nn.Module):
-    def __init__(self):
+    def __init__(self, pretrained_model_name, num_classes):
         super(HierarchicalDialogueActClassifier, self).__init__()
-        pretrained_model_name = "distilbert-base-cased"
-        num_classes = 46
 
-        self.encoder: PreTrainedModel = AutoModel.from_pretrained(pretrained_model_name)
-        self.dialogue_transformer: PreTrainedModel = AutoModel.from_pretrained(
-            pretrained_model_name
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            pretrained_model_name, use_fast=True
         )
+        self.encoder = AutoModel.from_pretrained(pretrained_model_name)
+        self.dialogue_transformer = AutoModel.from_pretrained(pretrained_model_name)
 
         hidden_size = self.encoder.config.hidden_size
         self.classifier = nn.Linear(hidden_size, num_classes)
 
+        # move everything to device
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.encoder.to(self.device)
         self.dialogue_transformer.to(self.device)
         self.classifier.to(self.device)
 
-    # Batch size 1
-    def forward(self, dialogues: List[List[BatchEncoding]]):
-        dialogue = dialogues[0]
+    def forward(self, dialogues: List[List[str]]):
+        dialogue_turns = dialogues[0]
 
-        # Move the encoding data to the device
-        turn_encodings = [encoding.to(self.device) for encoding in dialogue]
+        # Tokenize and move the encoding data to the device
+        turn_encodings = [
+            self.tokenizer(
+                turn,
+                return_tensors="pt",
+                padding="max_length",
+                truncation=True,
+                max_length=64,
+            ).to(self.device)
+            for turn in dialogue_turns
+        ]
 
         # Obtain turn embeddings
         turn_outputs = [self.encoder(**encoding) for encoding in turn_encodings]
@@ -116,6 +126,7 @@ class HierarchicalDialogueActClassifier(nn.Module):
         # Use the hidden state of each turn for classification
         logits = self.classifier(dialogue_hidden_states)
 
+        # dialogue_hidden_states: hidden states
         return logits, dialogue_hidden_states
 
 
@@ -125,11 +136,12 @@ class Net:
         self.params = params
         self.device = device
         self.loss_function = nn.CrossEntropyLoss(ignore_index=-1)
-        self.num_classes = 46
 
     def train(self, data: Dataset):
         n_epoch = self.params["n_epoch"]
-        self.model: HierarchicalDialogueActClassifier = self.net()
+        self.model: HierarchicalDialogueActClassifier = self.net(
+            self.params["model_name"], self.params["n_labels"]
+        )
         self.model.train()
         optimizer = optim.SGD(self.model.parameters(), **self.params["optimizer_args"])
         loader = DataLoader(
@@ -143,7 +155,7 @@ class Net:
                 batch_labels = batch_labels.to(self.device)
                 logits, _ = self.model(batch_dialogues)
                 loss = self.loss_function(
-                    logits.view(-1, self.num_classes), batch_labels.view(-1)
+                    logits.view(-1, self.params["n_labels"]), batch_labels.view(-1)
                 )
                 loss.backward()
                 optimizer.step()
@@ -153,7 +165,7 @@ class Net:
 
         print(f"Epoch {epoch + 1}/{n_epoch} - Loss: {epoch_loss / len(loader)}")
 
-    def predict(self, data: Dialogue):
+    def predict(self, data: MyDataset):
         self.model.eval()
         preds = torch.zeros(len(data.labels), dtype=int)
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
