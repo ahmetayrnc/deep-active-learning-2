@@ -1,0 +1,26 @@
+[
+    {
+        "name": "RandomSampling",
+        "args": {
+            "n_epoch": 5,
+            "n_round": 50,
+            "n_query": 10,
+            "n_init_labeled": 100,
+            "dataset_name": "SWDA",
+            "strategy_name": "RandomSampling",
+            "seed": 1
+        }
+    },
+    {
+        "name": "MaxTurnUncertainty",
+        "args": {
+            "n_epoch": 5,
+            "n_round": 50,
+            "n_query": 10,
+            "n_init_labeled": 100,
+            "dataset_name": "SWDA",
+            "strategy_name": "MaxTurnUncertainty",
+            "seed": 1
+        }
+    }
+]
