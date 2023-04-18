@@ -1,5 +1,6 @@
 from nets import Net
 from data import Data
+from torch.utils.data import Dataset
 
 
 class Strategy:
@@ -19,22 +20,22 @@ class Strategy:
         labeled_idxs, labeled_data = self.dataset.get_labeled_data()
         self.net.train(labeled_data)
 
-    def predict(self, data):
+    def predict(self, data: Dataset):
         preds = self.net.predict(data)
         return preds
 
-    def predict_prob(self, data):
+    def predict_prob(self, data: Dataset):
         probs = self.net.predict_prob(data)
         return probs
 
-    def predict_prob_dropout(self, data, n_drop=10):
+    def predict_prob_dropout(self, data: Dataset, n_drop=10):
         probs = self.net.predict_prob_dropout(data, n_drop=n_drop)
         return probs
 
-    def predict_prob_dropout_split(self, data, n_drop=10):
+    def predict_prob_dropout_split(self, data: Dataset, n_drop=10):
         probs = self.net.predict_prob_dropout_split(data, n_drop=n_drop)
         return probs
 
-    def get_embeddings(self, data):
+    def get_embeddings(self, data: Dataset):
         embeddings = self.net.get_embeddings(data)
         return embeddings

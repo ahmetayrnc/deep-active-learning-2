@@ -133,9 +133,11 @@ class Net:
 
         print(f"Epoch {epoch + 1}/{n_epoch} - Loss: {epoch_loss / len(loader)}")
 
-    def predict(self, data: MyDataset):
+    def predict(self, data: Dataset):
         self.model.eval()
-        loader = DataLoader(data, shuffle=False, **self.params["test_args"])
+        loader = DataLoader(
+            data, shuffle=False, collate_fn=string_collator, **self.params["test_args"]
+        )
 
         all_preds = []
         all_labels = []
@@ -143,7 +145,7 @@ class Net:
             for batch_dialogues, batch_labels in tqdm(loader):
                 logits, _ = self.model(batch_dialogues)
                 preds = torch.argmax(logits, dim=2).cpu().numpy()
-                labels = batch_labels  # .cpu().numpy()
+                labels = batch_labels.cpu().numpy()
 
                 all_preds.extend(preds)
                 all_labels.extend(labels)
