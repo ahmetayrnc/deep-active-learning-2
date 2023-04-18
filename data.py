@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from torch.utils.data import Dataset
 from datasets import load_dataset, load_from_disk, Dataset as HF_Dataset
 import pandas as pd
+from sklearn.metrics import classification_report
 
 
 class Metrics(TypedDict):
@@ -59,19 +60,20 @@ class Data:
         return self.handler(self.test)
 
     def cal_test_acc(self, preds: np.ndarray) -> float:
-        v_extract_labels = np.vectorize(lambda x: x["labels"], otypes=[List[int]])
-        labels_list = v_extract_labels(self.test)
-        y_true = np.concatenate(labels_list)
+        y_true = self.test[1].flatten()
         y_pred = preds
 
         accuracy = accuracy_score(y_true, y_pred)
         return accuracy
 
     def cal_test_metrics(self, preds: np.ndarray) -> Metrics:
-        v_extract_labels = np.vectorize(lambda x: x["labels"], otypes=[List[int]])
-        labels_list = v_extract_labels(self.test)
-        y_true = np.concatenate(labels_list)
+        y_true = self.test[1].flatten()
         y_pred = preds
+
+        metrics = classification_report(
+            y_true, y_pred, output_dict=True, zero_division=0
+        )
+        print(metrics)
 
         accuracy = accuracy_score(y_true, y_pred)
 
