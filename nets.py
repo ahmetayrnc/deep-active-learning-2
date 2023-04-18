@@ -5,12 +5,9 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import (
-    AutoModelForSequenceClassification,
-    PreTrainedModel,
     AutoModel,
     AutoTokenizer,
 )
-from transformers.modeling_outputs import SequenceClassifierOutput
 from torch.utils.data import Dataset
 import numpy as np
 from data import MyDataset
@@ -44,35 +41,6 @@ class DatasetArgs(TypedDict):
 
 
 Params = Dict[str, DatasetArgs]
-
-
-class SWDA_Net(nn.Module):
-    def __init__(self, n_class: int = 46) -> None:
-        super(SWDA_Net, self).__init__()
-        self.n_class = n_class
-        model_name = "distilbert-base-cased"
-        self.model: PreTrainedModel = (
-            AutoModelForSequenceClassification.from_pretrained(
-                model_name,
-                num_labels=n_class,
-            )
-        )
-
-    def forward(
-        self, input_ids: torch.Tensor, attention_mask: torch.Tensor
-    ) -> "tuple[torch.Tensor, torch.Tensor]":
-        outputs: SequenceClassifierOutput = self.model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            output_hidden_states=True,
-        )
-        logits = outputs.logits
-        hidden_states: list[torch.FloatTensor] = outputs.hidden_states
-        last_hidden_state = hidden_states[-1]
-        return logits, last_hidden_state
-
-    def get_embedding_dim(self):
-        return self.model.config.hidden_dim
 
 
 class HierarchicalDialogueActClassifier(nn.Module):
@@ -167,7 +135,6 @@ class Net:
 
     def predict(self, data: MyDataset):
         self.model.eval()
-        preds = torch.zeros(len(data.labels), dtype=int)
         loader = DataLoader(data, shuffle=False, **self.params["test_args"])
 
         all_preds = []
