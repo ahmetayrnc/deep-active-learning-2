@@ -7,7 +7,7 @@ from query_strategies.strategy import Strategy
 from torch.utils.data import Dataset
 from query_strategies import (
     RandomSampling,
-    LeastConfidence,
+    MaxTurnUncertainty,
     MarginSampling,
     EntropySampling,
     LeastConfidenceDropout,
@@ -63,8 +63,8 @@ def get_params(name: str) -> "dict[str, object]":
 def get_strategy(name: str) -> Type[Strategy]:
     if name == "RandomSampling":
         return RandomSampling
-    elif name == "LeastConfidence":
-        return LeastConfidence
+    elif name == "MaxTurnUncertainty":
+        return MaxTurnUncertainty
     elif name == "MarginSampling":
         return MarginSampling
     elif name == "EntropySampling":

@@ -66,21 +66,14 @@ class Data:
         metrics = classification_report(
             y_true, y_pred, output_dict=True, zero_division=0
         )
-        print(metrics)
-
-        accuracy = accuracy_score(y_true, y_pred)
-
-        macro_recall = recall_score(y_true, y_pred, average="macro", zero_division=0)
-        macro_precision = precision_score(
-            y_true, y_pred, average="macro", zero_division=0
-        )
-        macro_f1 = f1_score(y_true, y_pred, average="macro", zero_division=0)
+        # also print the metrics
+        print(classification_report(y_true, y_pred, zero_division=0))
 
         return {
-            "accuracy": accuracy,
-            "f1": macro_f1,
-            "recall": macro_recall,
-            "precision": macro_precision,
+            "accuracy": metrics["accuracy"],
+            "f1": metrics["macro avg"]["f1-score"],
+            "recall": metrics["macro avg"]["recall"],
+            "precision": metrics["macro avg"]["precision"],
         }
 
 

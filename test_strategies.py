@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 import torch
 from data import Data
+from nets import HierarchicalDialogueActClassifier
 from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
@@ -32,6 +33,12 @@ def main(args: dict) -> pd.DataFrame:
     # load network and strategy
     print("Loading network and strategy...")
     net = get_net(args["dataset_name"], device)  # load network
+
+    net.model: HierarchicalDialogueActClassifier = HierarchicalDialogueActClassifier(
+        net.params["model_name"], net.params["n_labels"]
+    )
+    net.model.train()
+
     strategy = get_strategy(args["strategy_name"])(dataset, net)  # load strategy
     print(f"Network and strategy loaded.")
 
@@ -42,57 +49,8 @@ def main(args: dict) -> pd.DataFrame:
     print(f"number of testing pool: {dataset.n_test}")
     print()
 
-    # initialize results
-    results = []
-    experiment_name = f"dataset_name:{args['dataset_name']}+n_init_labeled:{args['n_init_labeled']}+n_query:{args['n_query']}+n_round:{args['n_round']}+seed:{args['seed']}+strategy_name:{args['strategy_name']}"
-
-    # round 0 accuracy
-    print("Round 0")
-    strategy.train()
-    preds = strategy.predict(dataset.get_test_data())
-    metrics = dataset.cal_test_metrics(preds)
-    print(f"Round 0 testing metrics: {metrics}")
-
-    # collect information about the round
-    round_summary = {
-        "experiment": experiment_name,
-        "round": 0,
-    }
-    round_summary.update(args)
-    round_summary.update(metrics)
-    results.append(round_summary)
-
-    # start active learning
-    for rd in range(1, args["n_round"] + 1):
-        print(f"Round {rd}")
-
-        # query
-        print("Querying...")
-        query_idxs = strategy.query(args["n_query"])
-
-        # update labels
-        print("Updating labels...")
-        strategy.update(query_idxs)
-
-        print("Training...")
-        strategy.train()
-
-        # calculate accuracy
-        preds = strategy.predict(dataset.get_test_data())
-        metrics = dataset.cal_test_metrics(preds)
-        print(f"Round {rd} testing metrics: {metrics}")
-
-        # collect information about the round
-        round_summary = {
-            "experiment": experiment_name,
-            "round": rd,
-        }
-        round_summary.update(args)
-        round_summary.update(metrics)
-        results.append(round_summary)
-
-    results = pd.DataFrame(results)
-    return results
+    query_idxs = strategy.query(args["n_query"])
+    print(f"query indices: {query_idxs}")
 
 
 if __name__ == "__main__":

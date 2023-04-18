@@ -3,8 +3,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-
-# from tqdm import tqdm
 from transformers import (
     AutoModel,
     AutoTokenizer,
@@ -12,8 +10,8 @@ from transformers import (
 from torch.utils.data import Dataset
 import numpy as np
 from handlers import string_collator
-from sklearn.metrics import classification_report
 import tqdm
+import torch.nn.functional as F
 
 try:
     from tqdm.notebook import tqdm_notebook
@@ -125,10 +123,10 @@ class Net:
             data, shuffle=True, collate_fn=string_collator, **self.params["train_args"]
         )
 
-        for epoch in tqdm.tqdm(range(1, n_epoch + 1), ncols=100):
+        for epoch in range(1, n_epoch + 1):
             epoch_loss = 0.0
 
-            for batch_dialogues, batch_labels in loader:
+            for batch_dialogues, batch_labels in tqdm.tqdm(loader, ncols=100):
                 batch_labels = batch_labels.to(self.device)
                 logits, _ = self.model(batch_dialogues)
                 loss = self.loss_function(
@@ -161,30 +159,26 @@ class Net:
         all_labels = np.concatenate(all_labels, axis=None)
         all_preds = np.concatenate(all_preds, axis=None)
 
-        mask = [label != -1 for label in all_labels]
-        all_preds = [all_preds[i] for i, mask_value in enumerate(mask) if mask_value]
-        all_labels = [all_labels[i] for i, mask_value in enumerate(mask) if mask_value]
-
-        print("\nTest set classification report:")
-        print(classification_report(all_labels, all_preds, zero_division=0))
-
         return all_preds
 
-    # def predict_prob(self, data: Dataset):
-    #     self.clf.eval()
-    #     probs = torch.zeros([len(data.labels), self.clf.n_class])
-    #     loader = DataLoader(data, shuffle=False, **self.params["test_args"])
-    #     with torch.no_grad():
-    #         for input_ids, attention_mask, label, idxs in loader:
-    #             input_ids, attention_mask, label = (
-    #                 input_ids.to(self.device),
-    #                 attention_mask.to(self.device),
-    #                 label.to(self.device),
-    #             )
-    #             logits, embeddings = self.clf(input_ids, attention_mask)
-    #             prob = F.softmax(logits, dim=1)
-    #             probs[idxs] = prob.cpu()
-    #     return probs
+    def predict_prob(self, data: Dataset) -> List[np.ndarray]:
+        self.model.eval()
+
+        loader = DataLoader(
+            data, shuffle=False, collate_fn=string_collator, **self.params["test_args"]
+        )
+
+        all_probs = []
+        with torch.no_grad():
+            for batch_dialogues, batch_labels in loader:
+                logits, _ = self.model(batch_dialogues)
+                probs = F.softmax(logits, dim=2)
+                probs = probs.cpu().numpy()
+                all_probs.extend(probs)
+
+        # all_probs = np.concatenate(all_probs, axis=None)
+
+        return all_probs
 
     # def predict_prob_dropout(self, data: Dataset, n_drop: int = 10):
     #     self.clf.train()
