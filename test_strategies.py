@@ -26,6 +26,11 @@ def main(args: dict) -> pd.DataFrame:
     # load dataset
     print("Loading dataset...")
     train, test = get_dataset(args["dataset_name"])
+    subset = 20
+    train = np.array(train[0][:subset], dtype=object), np.array(
+        train[1][:subset], dtype=object
+    )
+    test = np.array(test[0], dtype=object), np.array(test[1], dtype=object)
     handler = get_handler(args["dataset_name"])
     dataset = Data(train, test, handler)
     print(f"Dataset loaded.")

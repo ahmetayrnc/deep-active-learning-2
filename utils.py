@@ -1,6 +1,6 @@
-from typing import Type
+from typing import Tuple, Type
 from numpy import ndarray
-from data import get_SWDA
+from data import MyDataset, get_SWDA
 from nets import Net, Params, HierarchicalDialogueActClassifier
 from handlers import DialogueDataset
 from query_strategies.strategy import Strategy
@@ -42,7 +42,7 @@ def get_handler(name: str) -> Type[Dataset]:
 
 def get_dataset(
     name: str,
-) -> "tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]":
+) -> Tuple[MyDataset, MyDataset]:
     if name == "SWDA":
         return get_SWDA()
     else:

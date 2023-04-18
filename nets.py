@@ -13,14 +13,6 @@ from handlers import string_collator
 import tqdm
 import torch.nn.functional as F
 
-try:
-    from tqdm.notebook import tqdm_notebook
-
-    tqdm.tqdm = tqdm_notebook
-    print("Notebook environment detected")
-except ImportError:
-    pass
-
 
 # Define the type of each field
 class TrainArgs(TypedDict):
@@ -170,7 +162,7 @@ class Net:
 
         all_probs = []
         with torch.no_grad():
-            for batch_dialogues, batch_labels in loader:
+            for batch_dialogues, batch_labels in tqdm.tqdm(loader):
                 logits, _ = self.model(batch_dialogues)
                 probs = F.softmax(logits, dim=2)
                 probs = probs.cpu().numpy()
