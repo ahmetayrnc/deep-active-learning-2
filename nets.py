@@ -143,7 +143,7 @@ class Net:
             for batch_dialogues, batch_labels in tqdm(loader):
                 logits, _ = self.model(batch_dialogues)
                 preds = torch.argmax(logits, dim=2).cpu().numpy()
-                labels = batch_labels.cpu().numpy()
+                labels = batch_labels  # .cpu().numpy()
 
                 all_preds.extend(preds)
                 all_labels.extend(labels)
