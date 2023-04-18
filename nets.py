@@ -3,16 +3,25 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from tqdm import tqdm
+
+# from tqdm import tqdm
 from transformers import (
     AutoModel,
     AutoTokenizer,
 )
 from torch.utils.data import Dataset
 import numpy as np
-from data import MyDataset
 from handlers import string_collator
 from sklearn.metrics import classification_report
+import tqdm
+
+try:
+    from tqdm.notebook import tqdm_notebook
+
+    tqdm.tqdm = tqdm_notebook
+    print("Notebook environment detected")
+except ImportError:
+    pass
 
 
 # Define the type of each field
@@ -116,7 +125,7 @@ class Net:
             data, shuffle=True, collate_fn=string_collator, **self.params["train_args"]
         )
 
-        for epoch in tqdm(range(1, n_epoch + 1), ncols=100):
+        for epoch in tqdm.tqdm(range(1, n_epoch + 1), ncols=100):
             epoch_loss = 0.0
 
             for batch_dialogues, batch_labels in loader:
@@ -142,7 +151,7 @@ class Net:
         all_preds = []
         all_labels = []
         with torch.no_grad():
-            for batch_dialogues, batch_labels in tqdm(loader):
+            for batch_dialogues, batch_labels in tqdm.tqdm(loader):
                 logits, _ = self.model(batch_dialogues)
                 preds = torch.argmax(logits, dim=2).cpu().numpy()
                 labels = batch_labels.cpu().numpy()
