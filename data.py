@@ -59,15 +59,8 @@ class Data:
     def get_test_data(self) -> Dataset:
         return self.handler(self.test)
 
-    def cal_test_acc(self, preds: np.ndarray) -> float:
-        y_true = self.test[1].flatten()
-        y_pred = preds
-
-        accuracy = accuracy_score(y_true, y_pred)
-        return accuracy
-
     def cal_test_metrics(self, preds: np.ndarray) -> Metrics:
-        y_true = self.test[1].flatten()
+        y_true = np.concatenate(self.test[1])
         y_pred = preds
 
         metrics = classification_report(
