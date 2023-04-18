@@ -23,7 +23,6 @@ from query_strategies import (
 
 params: Params = {
     "SWDA": {
-        "n_epoch": 1,
         "n_labels": 46,
         "model_name": "distilbert-base-cased",
         "train_args": {"batch_size": 1, "num_workers": 0},
@@ -49,9 +48,9 @@ def get_dataset(
         raise NotImplementedError
 
 
-def get_net(name: str, device: str) -> Net:
+def get_net(name: str, device: str, n_epoch: int) -> Net:
     if name == "SWDA":
-        return Net(HierarchicalDialogueActClassifier, params[name], device)
+        return Net(HierarchicalDialogueActClassifier, params[name], device, n_epoch)
     else:
         raise NotImplementedError
 

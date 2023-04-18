@@ -37,7 +37,7 @@ def main(args: dict) -> pd.DataFrame:
 
     # load network and strategy
     print("Loading network and strategy...")
-    net = get_net(args["dataset_name"], device)  # load network
+    net = get_net(args["dataset_name"], device, args["n_epoch"])  # load network
 
     net.model: HierarchicalDialogueActClassifier = HierarchicalDialogueActClassifier(
         net.params["model_name"], net.params["n_labels"]
@@ -62,6 +62,9 @@ if __name__ == "__main__":
     # parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=1, help="random seed")
+    parser.add_argument(
+        "--epoch", type=int, default=1, help="number of epochs to train"
+    )
     parser.add_argument(
         "--n_init_labeled",
         type=int,

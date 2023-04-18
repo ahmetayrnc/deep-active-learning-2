@@ -31,7 +31,7 @@ def main(args: dict) -> pd.DataFrame:
 
     # load network and strategy
     print("Loading network and strategy...")
-    net = get_net(args["dataset_name"], device)  # load network
+    net = get_net(args["dataset_name"], device, args["n_epoch"])  # load network
     strategy = get_strategy(args["strategy_name"])(dataset, net)  # load strategy
     print(f"Network and strategy loaded.")
 
@@ -44,7 +44,7 @@ def main(args: dict) -> pd.DataFrame:
 
     # initialize results
     results = []
-    experiment_name = f"dataset_name:{args['dataset_name']}+n_init_labeled:{args['n_init_labeled']}+n_query:{args['n_query']}+n_round:{args['n_round']}+seed:{args['seed']}+strategy_name:{args['strategy_name']}"
+    experiment_name = f"dataset_name:{args['dataset_name']}+n_init_labeled:{args['n_init_labeled']}+n_query:{args['n_query']}+n_round:{args['n_round']}+epoch:{args['n_epoch']}+seed:{args['seed']}+strategy_name:{args['strategy_name']}"
 
     # round 0 accuracy
     print("Round 0")
@@ -100,6 +100,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=1, help="random seed")
     parser.add_argument(
+        "--epoch", type=int, default=1, help="number of epochs to train"
+    )
+    parser.add_argument(
         "--n_init_labeled",
         type=int,
         default=10,
@@ -114,7 +117,7 @@ if __name__ == "__main__":
         type=str,
         default="SWDA",
         choices=["SWDA"],
-        help="dataset",
+        help="dataset to use",
     )
     parser.add_argument(
         "--strategy_name",
@@ -134,7 +137,7 @@ if __name__ == "__main__":
             "AdversarialBIM",
             "AdversarialDeepFool",
         ],
-        help="query strategy",
+        help="query strategy to use",
     )
 
     args = parser.parse_args()

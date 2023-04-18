@@ -98,14 +98,17 @@ class HierarchicalDialogueActClassifier(nn.Module):
 
 
 class Net:
-    def __init__(self, net: Type[nn.Module], params: DatasetArgs, device: str):
+    def __init__(
+        self, net: Type[nn.Module], params: DatasetArgs, device: str, n_epoch: int
+    ):
         self.net = net
         self.params = params
         self.device = device
         self.loss_function = nn.CrossEntropyLoss(ignore_index=-1)
+        self.n_epoch = n_epoch
 
     def train(self, data: Dataset):
-        n_epoch = self.params["n_epoch"]
+        n_epoch = self.n_epoch
         self.model: HierarchicalDialogueActClassifier = self.net(
             self.params["model_name"], self.params["n_labels"]
         )
@@ -115,7 +118,7 @@ class Net:
             data, shuffle=True, collate_fn=string_collator, **self.params["train_args"]
         )
 
-        for epoch in range(1, n_epoch + 1):
+        for epoch in range(n_epoch):
             epoch_loss = 0.0
 
             for batch_dialogues, batch_labels in tqdm.tqdm(loader, ncols=100):
