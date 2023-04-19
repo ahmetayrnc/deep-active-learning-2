@@ -10,7 +10,7 @@ from transformers import (
 from torch.utils.data import Dataset
 import numpy as np
 from handlers import string_collator
-import tqdm
+from tqdm.auto import tqdm
 import torch.nn.functional as F
 
 
@@ -121,7 +121,7 @@ class Net:
         for epoch in range(n_epoch):
             epoch_loss = 0.0
 
-            for batch_dialogues, batch_labels in tqdm.tqdm(loader, ncols=100):
+            for batch_dialogues, batch_labels in tqdm(loader, ncols=100):
                 batch_labels = batch_labels.to(self.device)
                 logits, _ = self.model(batch_dialogues)
                 loss = self.loss_function(
@@ -146,7 +146,7 @@ class Net:
         all_preds = []
         all_labels = []
         with torch.no_grad():
-            for batch_dialogues, batch_labels in tqdm.tqdm(loader):
+            for batch_dialogues, batch_labels in tqdm(loader):
                 logits, _ = self.model(batch_dialogues)
                 preds = torch.argmax(logits, dim=2).cpu().numpy()
                 labels = batch_labels.cpu().numpy()
@@ -167,7 +167,7 @@ class Net:
 
         all_probs = []
         with torch.no_grad():
-            for batch_dialogues, batch_labels in tqdm.tqdm(loader):
+            for batch_dialogues, batch_labels in tqdm(loader):
                 logits, _ = self.model(batch_dialogues)
                 probs = F.softmax(logits, dim=2)
                 probs = probs.cpu().numpy()
