@@ -10,6 +10,9 @@ from transformers import logging as transformers_logging
 
 
 def main(args: dict) -> pd.DataFrame:
+    print("[INFO] Running experiment with the following arguments:")
+    pprint(args)
+
     # set environment variable to disable parallelism in tokenizers
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -29,25 +32,37 @@ def main(args: dict) -> pd.DataFrame:
     # load dataset
     print("Loading dataset...")
     train, test = get_dataset(args["dataset_name"])
+    print(f"Dataset loaded.")
+
+    # subsample training data
     number_of_samples = int(len(train[0]) * args["fraction"])
-    print(f"Number of samples to train on: {number_of_samples}")
     train = train[0][:number_of_samples], train[1][:number_of_samples]
     handler = get_handler(args["dataset_name"])
     dataset = Data(train, test, handler)
-    print(f"Dataset loaded.")
+    print(f"Number of samples to train on: {number_of_samples}")
 
     # load network
     print("Loading network...")
     net = get_net(args["dataset_name"], device, args["n_epoch"])  # load network
     print(f"Network loaded.")
 
+    results = []
+
     def epoch_metrics():
         y_pred = net.predict(dataset.get_test_data())
-        _ = dataset.cal_test_metrics(y_pred)
+        metrics = dataset.cal_test_metrics(y_pred)
+        metrics.update(args)
+        results.append(metrics)
 
     # train network
     _, train_data = dataset.get_train_data()
     net.train(train_data, epoch_callback=epoch_metrics)
+
+    results = pd.DataFrame(results)
+    results.reset_index(inplace=True)
+    results.rename(columns={"index": "epoch"}, inplace=True)
+
+    return results
 
 
 if __name__ == "__main__":

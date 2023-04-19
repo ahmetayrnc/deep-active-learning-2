@@ -10,6 +10,9 @@ from transformers import logging as transformers_logging
 
 
 def main(args: dict) -> pd.DataFrame:
+    print("[INFO] Running experiment with the following arguments:")
+    pprint(args)
+
     # set environment variable to disable parallelism in tokenizers
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
