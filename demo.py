@@ -133,16 +133,8 @@ if __name__ == "__main__":
         choices=[
             "RandomSampling",
             "MaxTurnUncertainty",
-            "MarginSampling",
-            "EntropySampling",
-            "LeastConfidenceDropout",
-            "MarginSamplingDropout",
-            "EntropySamplingDropout",
-            "KMeansSampling",
-            "KCenterGreedy",
-            "BALDDropout",
-            "AdversarialBIM",
-            "AdversarialDeepFool",
+            "MinTurnUncertainty",
+            "AverageTurnUncertainty",
         ],
         help="query strategy to use",
     )

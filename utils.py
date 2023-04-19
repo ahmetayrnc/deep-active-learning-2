@@ -1,5 +1,4 @@
 from typing import Tuple, Type
-from numpy import ndarray
 from data import MyDataset, get_SWDA
 from nets import Net, Params, HierarchicalDialogueActClassifier
 from handlers import DialogueDataset
@@ -8,16 +7,8 @@ from torch.utils.data import Dataset
 from query_strategies import (
     RandomSampling,
     MaxTurnUncertainty,
-    MarginSampling,
-    EntropySampling,
-    LeastConfidenceDropout,
-    MarginSamplingDropout,
-    EntropySamplingDropout,
-    KMeansSampling,
-    KCenterGreedy,
-    BALDDropout,
-    AdversarialBIM,
-    AdversarialDeepFool,
+    MinTurnUncertainty,
+    AverageTurnUncertainty,
 )
 
 
@@ -64,25 +55,29 @@ def get_strategy(name: str) -> Type[Strategy]:
         return RandomSampling
     elif name == "MaxTurnUncertainty":
         return MaxTurnUncertainty
-    elif name == "MarginSampling":
-        return MarginSampling
-    elif name == "EntropySampling":
-        return EntropySampling
-    elif name == "LeastConfidenceDropout":
-        return LeastConfidenceDropout
-    elif name == "MarginSamplingDropout":
-        return MarginSamplingDropout
-    elif name == "EntropySamplingDropout":
-        return EntropySamplingDropout
-    elif name == "KMeansSampling":
-        return KMeansSampling
-    elif name == "KCenterGreedy":
-        return KCenterGreedy
-    elif name == "BALDDropout":
-        return BALDDropout
-    elif name == "AdversarialBIM":
-        return AdversarialBIM
-    elif name == "AdversarialDeepFool":
-        return AdversarialDeepFool
+    elif name == "MinTurnUncertainty":
+        return MinTurnUncertainty
+    elif name == "AverageTurnUncertainty":
+        return AverageTurnUncertainty
+    # elif name == "MarginSampling":
+    #     return MarginSampling
+    # elif name == "EntropySampling":
+    #     return EntropySampling
+    # elif name == "LeastConfidenceDropout":
+    #     return LeastConfidenceDropout
+    # elif name == "MarginSamplingDropout":
+    #     return MarginSamplingDropout
+    # elif name == "EntropySamplingDropout":
+    #     return EntropySamplingDropout
+    # elif name == "KMeansSampling":
+    #     return KMeansSampling
+    # elif name == "KCenterGreedy":
+    #     return KCenterGreedy
+    # elif name == "BALDDropout":
+    #     return BALDDropout
+    # elif name == "AdversarialBIM":
+    #     return AdversarialBIM
+    # elif name == "AdversarialDeepFool":
+    #     return AdversarialDeepFool
     else:
         raise NotImplementedError
