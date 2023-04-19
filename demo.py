@@ -6,11 +6,15 @@ from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
 import pandas as pd
+from transformers import logging as transformers_logging
 
 
 def main(args: dict) -> pd.DataFrame:
     # set environment variable to disable parallelism in tokenizers
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+    # disable transformers warnings
+    transformers_logging.set_verbosity_error()
 
     # fix random seed
     np.random.seed(args["seed"])
