@@ -107,7 +107,7 @@ class Net:
         self.loss_function = nn.CrossEntropyLoss(ignore_index=-1)
         self.n_epoch = n_epoch
 
-    def train(self, data: Dataset):
+    def train(self, data: Dataset, epoch_callback=None):
         n_epoch = self.n_epoch
         self.model: HierarchicalDialogueActClassifier = self.net(
             self.params["model_name"], self.params["n_labels"]
@@ -133,9 +133,11 @@ class Net:
 
             epoch_loss += loss.item()
 
-        print(f"Epoch {epoch + 1}/{n_epoch} - Loss: {epoch_loss / len(loader)}")
+            if epoch_callback:
+                epoch_callback()
+            # print(f"Epoch {epoch + 1}/{n_epoch} - Loss: {epoch_loss / len(loader)}")
 
-    def predict(self, data: Dataset):
+    def predict(self, data: Dataset) -> np.ndarray:
         self.model.eval()
         loader = DataLoader(
             data, shuffle=False, collate_fn=string_collator, **self.params["test_args"]

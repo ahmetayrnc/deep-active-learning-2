@@ -100,7 +100,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=1, help="random seed")
     parser.add_argument(
-        "--epoch", type=int, default=1, help="number of epochs to train"
+        "--n_epoch", type=int, default=1, help="number of epochs to train"
     )
     parser.add_argument(
         "--n_init_labeled",
