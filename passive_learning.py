@@ -29,9 +29,11 @@ def main(args: dict) -> pd.DataFrame:
     # load dataset
     print("Loading dataset...")
     train, test = get_dataset(args["dataset_name"])
+    number_of_samples = int(len(train[0]) * args["fraction"])
+    print(f"Number of samples to train on: {number_of_samples}")
+    train = train[0][:number_of_samples], train[1][:number_of_samples]
     handler = get_handler(args["dataset_name"])
     dataset = Data(train, test, handler)
-    # dataset.initialize_labels(len(train[1]))
     print(f"Dataset loaded.")
 
     # load network
@@ -54,6 +56,9 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=1, help="random seed")
     parser.add_argument(
         "--n_epoch", type=int, default=1, help="number of epochs to train"
+    )
+    parser.add_argument(
+        "--fraction", type=float, default=1.0, help="fraction of samples to train on"
     )
     parser.add_argument(
         "--dataset_name",
