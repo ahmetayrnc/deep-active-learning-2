@@ -113,7 +113,9 @@ class Net:
             self.params["model_name"], self.params["n_labels"]
         )
         self.model.train()
-        optimizer = optim.SGD(self.model.parameters(), **self.params["optimizer_args"])
+        optimizer = optim.AdamW(
+            self.model.parameters(), **self.params["optimizer_args"]
+        )
         loader = DataLoader(
             data, shuffle=True, collate_fn=string_collator, **self.params["train_args"]
         )

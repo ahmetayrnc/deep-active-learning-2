@@ -27,7 +27,7 @@ params: Params = {
         "model_name": "distilbert-base-cased",
         "train_args": {"batch_size": 1, "num_workers": 0},
         "test_args": {"batch_size": 1, "num_workers": 0},
-        "optimizer_args": {"lr": 0.05, "momentum": 0.3},
+        "optimizer_args": {"lr": 1e-5},
     },
 }
 
