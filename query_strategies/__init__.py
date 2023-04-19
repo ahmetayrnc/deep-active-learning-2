@@ -1,7 +1,9 @@
 from .random_sampling import RandomSampling
-from .max_turn_uncertainty import MaxTurnUncertainty
-from .min_turn_uncertainty import MinTurnUncertainty
-from .average_turn_uncertainty import AverageTurnUncertainty
+from .uncertainty_max_turn import MaxTurnUncertainty
+from .uncertainty_min_turn import MinTurnUncertainty
+from .uncertainty_average_turn import AverageTurnUncertainty
+from .uncertainty_median_turn import MedianTurnUncertainty
+
 
 # from .margin_sampling import MarginSampling
 # from .entropy_sampling import EntropySampling

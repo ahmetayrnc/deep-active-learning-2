@@ -7,11 +7,18 @@ from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
 import pandas as pd
+from transformers import logging as transformers_logging
 
 
 def main(args: dict) -> pd.DataFrame:
+    print("[INFO] Running experiment with the following arguments:")
+    pprint(args)
+
     # set environment variable to disable parallelism in tokenizers
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+    # disable transformers warnings
+    transformers_logging.set_verbosity_error()
 
     # fix random seed
     np.random.seed(args["seed"])
@@ -26,35 +33,32 @@ def main(args: dict) -> pd.DataFrame:
     # load dataset
     print("Loading dataset...")
     train, test = get_dataset(args["dataset_name"])
-    subset = 20
-    train = np.array(train[0][:subset], dtype=object), np.array(
-        train[1][:subset], dtype=object
-    )
-    test = np.array(test[0], dtype=object), np.array(test[1], dtype=object)
-    handler = get_handler(args["dataset_name"])
-    dataset = Data(train, test, handler)
     print(f"Dataset loaded.")
 
-    # load network and strategy
-    print("Loading network and strategy...")
-    net = get_net(args["dataset_name"], device, args["n_epoch"])  # load network
+    number_of_samples = 6
+    train = train[0][:number_of_samples], train[1][:number_of_samples]
+    handler = get_handler(args["dataset_name"])
+    dataset = Data(train, test, handler)
+    print(f"Number of samples to train on: {number_of_samples}")
 
+    # load network and strategy
+    print("Loading network...")
+    net = get_net(args["dataset_name"], device, 1)  # load network
+    # turn the model to train mode
     net.model: HierarchicalDialogueActClassifier = HierarchicalDialogueActClassifier(
         net.params["model_name"], net.params["n_labels"]
     )
     net.model.train()
+    print(f"Network loaded.")
 
+    print("Loading strategy...")
     strategy = get_strategy(args["strategy_name"])(dataset, net)  # load strategy
-    print(f"Network and strategy loaded.")
+    print(f"Strategy loaded.")
 
     # start experiment
-    dataset.initialize_labels(args["n_init_labeled"])
-    print(f"number of labeled pool: {args['n_init_labeled']}")
-    print(f"number of unlabeled pool: {dataset.n_pool-args['n_init_labeled']}")
-    print(f"number of testing pool: {dataset.n_test}")
-    print()
+    dataset.initialize_labels(0)
 
-    query_idxs = strategy.query(args["n_query"])
+    query_idxs = strategy.query(1)
     print(f"query indices: {query_idxs}")
 
 
@@ -62,19 +66,6 @@ if __name__ == "__main__":
     # parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=1, help="random seed")
-    parser.add_argument(
-        "--epoch", type=int, default=1, help="number of epochs to train"
-    )
-    parser.add_argument(
-        "--n_init_labeled",
-        type=int,
-        default=10,
-        help="number of init labeled samples",
-    )
-    parser.add_argument(
-        "--n_query", type=int, default=1, help="number of queries per round"
-    )
-    parser.add_argument("--n_round", type=int, default=10, help="number of rounds")
     parser.add_argument(
         "--dataset_name",
         type=str,
@@ -91,6 +82,7 @@ if __name__ == "__main__":
             "MaxTurnUncertainty",
             "MinTurnUncertainty",
             "AverageTurnUncertainty",
+            "MedianTurnUncertainty",
         ],
         help="query strategy",
     )

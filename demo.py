@@ -135,6 +135,7 @@ if __name__ == "__main__":
             "MaxTurnUncertainty",
             "MinTurnUncertainty",
             "AverageTurnUncertainty",
+            "MedianTurnUncertainty",
         ],
         help="query strategy to use",
     )

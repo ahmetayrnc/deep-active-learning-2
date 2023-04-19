@@ -9,6 +9,7 @@ from query_strategies import (
     MaxTurnUncertainty,
     MinTurnUncertainty,
     AverageTurnUncertainty,
+    MedianTurnUncertainty,
 )
 
 
@@ -59,6 +60,8 @@ def get_strategy(name: str) -> Type[Strategy]:
         return MinTurnUncertainty
     elif name == "AverageTurnUncertainty":
         return AverageTurnUncertainty
+    elif name == "MedianTurnUncertainty":
+        return MedianTurnUncertainty
     # elif name == "MarginSampling":
     #     return MarginSampling
     # elif name == "EntropySampling":
