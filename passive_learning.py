@@ -79,7 +79,7 @@ if __name__ == "__main__":
         "--dataset_name",
         type=str,
         default="SWDA",
-        choices=["SWDA"],
+        choices=["SWDA", "DYDA"],
         help="dataset to use",
     )
 

@@ -1,7 +1,6 @@
 import os
 from typing import List, Tuple, Type, TypedDict
 import numpy as np
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.utils.data import Dataset
 from datasets import load_dataset, load_from_disk, Dataset as HF_Dataset
 import pandas as pd
@@ -77,26 +76,28 @@ class Data:
         }
 
 
-def get_SWDA() -> Tuple[MyDataset, MyDataset]:
-    def convert(dataset: HF_Dataset) -> MyDataset:
-        def process_group(group):
-            group_df = pd.DataFrame(group[1])
-            if len(group_df) > 512:
-                print(f"skipped dialogue: {group[0]}")
-                return None
+def convert(dataset: HF_Dataset) -> MyDataset:
+    def process_group(group):
+        group_df = pd.DataFrame(group[1])
+        if len(group_df) > 512:
+            print(f"skipped dialogue: {group[0]}")
+            return None
 
-            turns = group_df["Utterance"].tolist()
-            labels = group_df["Label"].tolist()
+        turns = group_df["Utterance"].tolist()
+        labels = group_df["Label"].tolist()
 
-            return turns, labels
+        return turns, labels
 
-        df = dataset.to_pandas()
-        grouped = df.groupby("Dialogue_ID")
-        results = list(map(process_group, grouped))
-        all_turns, all_labels = zip(*[r for r in results if r is not None])
-        return all_turns, all_labels
+    df = dataset.to_pandas()
+    grouped = df.groupby("Dialogue_ID")
+    results = list(map(process_group, grouped))
+    all_turns, all_labels = zip(*[r for r in results if r is not None])
+    return all_turns, all_labels
 
-    dataset_dir = "data/swda"
+
+def get_silicone_dataset(dataset_name: str):
+    main_dataset_name = "silicone"
+    dataset_dir = f"data/{dataset_name}"
 
     # Load the dataset
     if os.path.exists(dataset_dir):
@@ -105,11 +106,18 @@ def get_SWDA() -> Tuple[MyDataset, MyDataset]:
         print("Dataset loaded from disk")
     else:
         # load the dataset from Hugging Face and save it to disk
-        dataset = load_dataset("silicone", "swda")
+        dataset = load_dataset(main_dataset_name, dataset_name)
         dataset.save_to_disk(dataset_dir)
         print("Dataset loaded from Hugging Face and saved to disk")
 
     train = convert(dataset["train"])
     test = convert(dataset["test"])
-
     return train, test
+
+
+def get_SWDA() -> Tuple[MyDataset, MyDataset]:
+    return get_silicone_dataset("swda")
+
+
+def get_DYDA() -> Tuple[MyDataset, MyDataset]:
+    return get_silicone_dataset("dyda_da")

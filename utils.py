@@ -1,5 +1,5 @@
 from typing import Tuple, Type
-from data import MyDataset, get_SWDA
+from data import MyDataset, get_SWDA, get_DYDA
 from nets import Net, Params, HierarchicalDialogueActClassifier
 from handlers import DialogueDataset
 from query_strategies.strategy import Strategy
@@ -21,11 +21,20 @@ params: Params = {
         "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
     },
+    "DYDA": {
+        "n_labels": 4,
+        "model_name": "distilbert-base-cased",
+        "train_args": {"batch_size": 1, "num_workers": 0},
+        "test_args": {"batch_size": 1, "num_workers": 0},
+        "optimizer_args": {"lr": 1e-5},
+    },
 }
 
 
 def get_handler(name: str) -> Type[Dataset]:
     if name == "SWDA":
+        return DialogueDataset
+    if name == "DYDA":
         return DialogueDataset
     else:
         raise NotImplementedError
@@ -36,12 +45,16 @@ def get_dataset(
 ) -> Tuple[MyDataset, MyDataset]:
     if name == "SWDA":
         return get_SWDA()
+    elif name == "DYDA":
+        return get_DYDA()
     else:
         raise NotImplementedError
 
 
 def get_net(name: str, device: str, n_epoch: int) -> Net:
     if name == "SWDA":
+        return Net(HierarchicalDialogueActClassifier, params[name], device, n_epoch)
+    elif name == "DYDA":
         return Net(HierarchicalDialogueActClassifier, params[name], device, n_epoch)
     else:
         raise NotImplementedError
