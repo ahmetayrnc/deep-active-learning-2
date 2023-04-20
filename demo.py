@@ -142,6 +142,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     args_dict = vars(args)
-    pprint(args_dict)
 
     main(args_dict)
