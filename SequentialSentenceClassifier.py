@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from transformers import AutoModel, AutoTokenizer
 from typing import List, Tuple
+from transformers import AutoModel, AutoTokenizer
 
 
 class SequentialSentenceClassifier(nn.Module):
@@ -40,8 +40,8 @@ class SequentialSentenceClassifier(nn.Module):
                 return_tensors="pt",
                 truncation=True,
                 max_length=512,
-            )
-            mask = tokens.ne(self.tokenizer.pad_token_id).float()
+            ).to(self.device)
+            mask = tokens.ne(self.tokenizer.pad_token_id).float().to(self.device)
 
             # Get the hidden states of the pretrained model
             outputs = self.pretrained_model(tokens, attention_mask=mask)
