@@ -43,7 +43,11 @@ def main(args: dict) -> pd.DataFrame:
 
     # load network
     print("Loading network...")
-    net = get_net(args["dataset_name"], device, args["n_epoch"])  # load network
+    if "params" not in args:
+        args["params"] = None
+    net = get_net(
+        args["dataset_name"], device, args["n_epoch"], args["params"]
+    )  # load network
     print(f"Network loaded.")
 
     results = []
@@ -82,7 +86,6 @@ if __name__ == "__main__":
         choices=["SWDA", "DYDA"],
         help="dataset to use",
     )
-
     args = parser.parse_args()
     args_dict = vars(args)
 

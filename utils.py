@@ -19,7 +19,7 @@ from query_strategies import (
 )
 
 
-params: Params = {
+default_params: Params = {
     "SWDA": {
         "n_labels": 46,
         "model_name": "distilbert-base-cased",
@@ -59,17 +59,15 @@ def get_dataset(
         raise NotImplementedError
 
 
-def get_net(name: str, device: str, n_epoch: int) -> Net:
+def get_net(name: str, device: str, n_epoch: int, params: Params) -> Net:
+    if params == None:
+        params = default_params
     if name == "SWDA":
         return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
     elif name == "DYDA":
         return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
     else:
         raise NotImplementedError
-
-
-def get_params(name: str) -> "dict[str, object]":
-    return params[name]
 
 
 def get_strategy(name: str) -> Type[Strategy]:
