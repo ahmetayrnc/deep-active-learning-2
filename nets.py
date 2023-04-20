@@ -43,8 +43,11 @@ Params = Dict[str, DatasetArgs]
 
 
 class HierarchicalDialogueActClassifier(nn.Module):
-    def __init__(self, pretrained_model_name, num_classes):
+    def __init__(
+        self, pretrained_model_name: str, num_classes: int, max_turn_length: int = 64
+    ):
         super(HierarchicalDialogueActClassifier, self).__init__()
+        self.max_turn_length = max_turn_length
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name, use_fast=True
@@ -71,7 +74,7 @@ class HierarchicalDialogueActClassifier(nn.Module):
                 return_tensors="pt",
                 padding="max_length",
                 truncation=True,
-                max_length=64,
+                max_length=self.max_turn_length,
             ).to(self.device)
             for turn in dialogue_turns
         ]
@@ -110,7 +113,9 @@ class Net:
     def train(self, data: Dataset, epoch_callback=None):
         n_epoch = self.n_epoch
         self.model: HierarchicalDialogueActClassifier = self.net(
-            self.params["model_name"], self.params["n_labels"]
+            self.params["model_name"],
+            self.params["n_labels"],
+            self.params["max_turn_length"],
         )
         self.model.train()
         optimizer = optim.AdamW(
