@@ -49,6 +49,7 @@ class Net:
 
     def train(self, data: Dataset, epoch_callback=None):
         n_epoch = self.n_epoch
+        accumulation_steps = 8
         self.model = self.net(
             self.params["model_name"],
             self.params["n_labels"],
@@ -66,17 +67,20 @@ class Net:
             epoch_loss = 0.0
 
             a = tqdm(loader, ncols=100, desc=f"Epoch loss: {epoch_loss:.4f}")
-            for batch_dialogues, batch_labels in a:
+            for step, (batch_dialogues, batch_labels) in enumerate(a):
                 batch_labels = batch_labels.to(self.device)
                 logits, _ = self.model(batch_dialogues)
                 loss = self.loss_function(
                     logits.view(-1, self.params["n_labels"]), batch_labels.view(-1)
                 )
+                loss = loss / accumulation_steps  # Normalize the loss
                 loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
 
-                epoch_loss += loss.item()
+                if (step + 1) % accumulation_steps == 0:
+                    optimizer.step()
+                    optimizer.zero_grad()
+
+                epoch_loss += loss.item() * accumulation_steps  # Scale the loss back
 
                 a.set_description(f"Epoch loss: {epoch_loss:.4f}")
 
