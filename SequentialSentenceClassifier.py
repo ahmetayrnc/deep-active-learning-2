@@ -57,7 +57,8 @@ class SequentialSentenceClassifier(nn.Module):
         def process_chunk(chunk: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
             # Combine the dialogue sentences using the separator token
             sep_token = self.tokenizer.sep_token
-            text = sep_token.join(chunk)
+            cls_token = self.tokenizer.cls_token
+            text = cls_token + sep_token.join(chunk) + sep_token
 
             # Tokenize the combined text and create an attention mask
             tokens = self.tokenizer.encode(
@@ -65,6 +66,7 @@ class SequentialSentenceClassifier(nn.Module):
                 return_tensors="pt",
                 truncation=True,
                 max_length=512,
+                add_special_tokens=False,
             ).to(self.device)
             mask = tokens.ne(self.tokenizer.pad_token_id).float().to(self.device)
 
