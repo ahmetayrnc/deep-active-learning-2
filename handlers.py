@@ -19,4 +19,18 @@ class DialogueDataset(Dataset):
 
 def string_collator(batch):
     dialogues, labels = zip(*batch)
-    return dialogues, torch.stack([torch.tensor(label) for label in labels])
+
+    # Find the maximum dialogue length in the batch
+    max_len = max(len(label) for label in labels)
+
+    # Pad the labels and stack them as a tensor
+    padded_labels = []
+    for label in labels:
+        if len(label) < max_len:
+            pad_len = max_len - len(label)
+            padded_label = label + [-1] * pad_len
+        else:
+            padded_label = label
+        padded_labels.append(torch.tensor(padded_label))
+
+    return dialogues, torch.stack(padded_labels)

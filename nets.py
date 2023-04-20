@@ -65,7 +65,8 @@ class Net:
         for epoch in range(n_epoch):
             epoch_loss = 0.0
 
-            for batch_dialogues, batch_labels in tqdm(loader, ncols=100):
+            a = tqdm(loader, ncols=100, desc=f"Epoch loss: {epoch_loss:.4f}")
+            for batch_dialogues, batch_labels in a:
                 batch_labels = batch_labels.to(self.device)
                 logits, _ = self.model(batch_dialogues)
                 loss = self.loss_function(
@@ -75,11 +76,12 @@ class Net:
                 optimizer.step()
                 optimizer.zero_grad()
 
-            epoch_loss += loss.item()
+                epoch_loss += loss.item()
+
+                a.set_description(f"Epoch loss: {epoch_loss:.4f}")
 
             if epoch_callback:
                 epoch_callback()
-            # print(f"Epoch {epoch + 1}/{n_epoch} - Loss: {epoch_loss / len(loader)}")
 
     def predict(self, data: Dataset) -> np.ndarray:
         self.model.eval()
@@ -95,8 +97,18 @@ class Net:
                 preds = torch.argmax(logits, dim=2).cpu().numpy()
                 labels = batch_labels.cpu().numpy()
 
-                all_preds.extend(preds)
-                all_labels.extend(labels)
+                # Remove padding from the predictions based on the padded labels
+                valid_indices = labels != -1
+                unpadded_preds = np.array(
+                    [pred[mask] for pred, mask in zip(preds, valid_indices)]
+                )
+                unpadded_labels = np.array(
+                    [label[mask] for label, mask in zip(labels, valid_indices)]
+                )
+
+                all_preds.extend(unpadded_preds)
+                all_labels.extend(unpadded_labels)
+
         all_labels = np.concatenate(all_labels, axis=None)
         all_preds = np.concatenate(all_preds, axis=None)
 

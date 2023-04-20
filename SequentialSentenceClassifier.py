@@ -92,6 +92,7 @@ class SequentialSentenceClassifier(nn.Module):
             return logits, embeddings
 
         # Process each dialogue in the input dialogues
+        max_len = max(len(dialogue) for dialogue in dialogues)
         for dialogue in dialogues:
             dialogue_logits = []
             dialogue_embeddings = []
@@ -111,6 +112,21 @@ class SequentialSentenceClassifier(nn.Module):
             # Concatenate the logits and embeddings for each dialogue
             dialogue_logits = torch.cat(dialogue_logits)
             dialogue_embeddings = torch.cat(dialogue_embeddings)
+
+            # Pad the logits and embeddings to the same length
+            if dialogue_logits.size(0) < max_len:
+                pad_len = max_len - dialogue_logits.size(0)
+                pad_logits = torch.zeros(pad_len, dialogue_logits.size(1)).to(
+                    self.device
+                )
+                pad_embeddings = torch.zeros(pad_len, dialogue_embeddings.size(1)).to(
+                    self.device
+                )
+                dialogue_logits = torch.cat([dialogue_logits, pad_logits], dim=0)
+                dialogue_embeddings = torch.cat(
+                    [dialogue_embeddings, pad_embeddings], dim=0
+                )
+
             all_logits.append(dialogue_logits)
             all_embeddings.append(dialogue_embeddings)
 
