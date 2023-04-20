@@ -1,8 +1,8 @@
 import argparse
 import numpy as np
 import torch
+from HieararchicalDialogueActClassifier import HierarchicalDialogueActClassifier
 from data import Data
-from nets import HierarchicalDialogueActClassifier
 from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
@@ -45,7 +45,7 @@ def main(args: dict) -> pd.DataFrame:
     print("Loading network...")
     net = get_net(args["dataset_name"], device, 1)  # load network
     # turn the model to train mode
-    net.model: HierarchicalDialogueActClassifier = HierarchicalDialogueActClassifier(
+    net.model = HierarchicalDialogueActClassifier(
         net.params["model_name"], net.params["n_labels"]
     )
     net.model.train()
