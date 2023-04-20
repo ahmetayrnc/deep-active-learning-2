@@ -68,7 +68,6 @@ class Net:
             for batch_dialogues, batch_labels in tqdm(loader, ncols=100):
                 batch_labels = batch_labels.to(self.device)
                 logits, _ = self.model(batch_dialogues)
-                print(f"logits: {logits.shape}, labels: {batch_labels.shape}")
                 loss = self.loss_function(
                     logits.view(-1, self.params["n_labels"]), batch_labels.view(-1)
                 )

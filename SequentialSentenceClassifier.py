@@ -4,6 +4,30 @@ from typing import List, Tuple
 from transformers import AutoModel, AutoTokenizer
 
 
+class MLP(nn.Module):
+    def __init__(
+        self, input_size: int, num_classes: int, hidden_sizes: List[int] = None
+    ):
+        super(MLP, self).__init__()
+
+        if hidden_sizes is None:
+            hidden_sizes = [256, 128]
+
+        layers = []
+        prev_size = input_size
+
+        for hidden_size in hidden_sizes:
+            layers.append(nn.Linear(prev_size, hidden_size))
+            layers.append(nn.ReLU())
+            prev_size = hidden_size
+
+        layers.append(nn.Linear(hidden_sizes[-1], num_classes))
+        self.model = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.model(x)
+
+
 class SequentialSentenceClassifier(nn.Module):
     def __init__(self, pretrained_model_name: str, num_classes: int):
         super(SequentialSentenceClassifier, self).__init__()
@@ -15,9 +39,12 @@ class SequentialSentenceClassifier(nn.Module):
         )
 
         # Define a linear classifier to map the hidden states to the desired number of classes
-        self.classifier = nn.Linear(
-            self.pretrained_model.config.hidden_size, num_classes
-        )
+        # self.classifier = nn.Linear(
+        #     self.pretrained_model.config.hidden_size, num_classes
+        # )
+
+        # Define an MLP classifier to map the hidden states to the desired number of classes
+        self.classifier = MLP(self.pretrained_model.config.hidden_size, num_classes)
 
         # Move everything to the appropriate device (GPU if available, otherwise CPU)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
