@@ -112,10 +112,10 @@ class Net:
 
     def train(self, data: Dataset, epoch_callback=None):
         n_epoch = self.n_epoch
-        self.model: HierarchicalDialogueActClassifier = self.net(
+        self.model = self.net(
             self.params["model_name"],
             self.params["n_labels"],
-            self.params["max_turn_length"],
+            # self.params["max_turn_length"],
         )
         self.model.train()
         optimizer = optim.AdamW(

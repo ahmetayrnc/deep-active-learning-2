@@ -1,6 +1,12 @@
 from typing import Tuple, Type
+from SequentialSentenceClassifier import SequentialSentenceClassifier
 from data import MyDataset, get_SWDA, get_DYDA
-from nets import Net, Params, HierarchicalDialogueActClassifier
+from nets import (
+    Net,
+    Params,
+    # HierarchicalDialogueActClassifier,
+    # SequentialSentenceClassifier,
+)
 from handlers import DialogueDataset
 from query_strategies.strategy import Strategy
 from torch.utils.data import Dataset
@@ -25,7 +31,7 @@ params: Params = {
     "DYDA": {
         "n_labels": 4,
         "model_name": "distilbert-base-cased",
-        "max_turn_length": 128,
+        "max_turn_length": 512,
         "train_args": {"batch_size": 1, "num_workers": 0},
         "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
@@ -55,9 +61,9 @@ def get_dataset(
 
 def get_net(name: str, device: str, n_epoch: int) -> Net:
     if name == "SWDA":
-        return Net(HierarchicalDialogueActClassifier, params[name], device, n_epoch)
+        return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
     elif name == "DYDA":
-        return Net(HierarchicalDialogueActClassifier, params[name], device, n_epoch)
+        return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
     else:
         raise NotImplementedError
 
