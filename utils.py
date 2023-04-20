@@ -26,7 +26,7 @@ params: Params = {
         "max_turn_length": 80,
         "train_args": {"batch_size": 1, "num_workers": 0},
         "test_args": {"batch_size": 1, "num_workers": 0},
-        "optimizer_args": {"lr": 5e-5},
+        "optimizer_args": {"lr": 1e-6},
     },
     "DYDA": {
         "n_labels": 4,

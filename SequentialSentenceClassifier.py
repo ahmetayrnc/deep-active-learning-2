@@ -38,10 +38,8 @@ class SequentialSentenceClassifier(nn.Module):
             pretrained_model_name, use_fast=True
         )
 
-        # Define a linear classifier to map the hidden states to the desired number of classes
-        # self.classifier = nn.Linear(
-        #     self.pretrained_model.config.hidden_size, num_classes
-        # )
+        for param in self.pretrained_model.parameters():
+            param.requires_grad = True
 
         # Define an MLP classifier to map the hidden states to the desired number of classes
         self.classifier = MLP(self.pretrained_model.config.hidden_size, num_classes)
@@ -97,7 +95,7 @@ class SequentialSentenceClassifier(nn.Module):
             dialogue_embeddings = []
 
             # Split the dialogue into smaller chunks and process each chunk
-            chunk_size = 20  # Adjust this based on your specific use case
+            chunk_size = 10  # Adjust this based on your specific use case
             chunks = [
                 dialogue[i : i + chunk_size]
                 for i in range(0, len(dialogue), chunk_size)
@@ -105,13 +103,10 @@ class SequentialSentenceClassifier(nn.Module):
 
             for chunk in chunks:
                 logits, embeddings = process_chunk(chunk)
-                # logits = logits.unsqueeze(0)
-                # print(f"chuck logits shape: {logits.shape}")
                 dialogue_logits.append(logits)
                 dialogue_embeddings.append(embeddings)
 
             # Concatenate the logits and embeddings for each dialogue
-            # print(dialogue_logits)
             dialogue_logits = torch.cat(dialogue_logits)
             dialogue_embeddings = torch.cat(dialogue_embeddings)
             all_logits.append(dialogue_logits)
