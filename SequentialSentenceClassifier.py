@@ -38,8 +38,8 @@ class SequentialSentenceClassifier(nn.Module):
             pretrained_model_name, use_fast=True
         )
 
-        for param in self.pretrained_model.parameters():
-            param.requires_grad = True
+        # for param in self.pretrained_model.parameters():
+        #     param.requires_grad = True
 
         # Define an MLP classifier to map the hidden states to the desired number of classes
         self.classifier = MLP(self.pretrained_model.config.hidden_size, num_classes)
@@ -57,34 +57,38 @@ class SequentialSentenceClassifier(nn.Module):
         def process_chunk(chunk: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
             # Combine the dialogue sentences using the separator token
             sep_token = self.tokenizer.sep_token
-            cls_token = self.tokenizer.cls_token
-            text = cls_token + sep_token.join(chunk) + sep_token
+            text = sep_token.join(chunk) + sep_token
 
             # Tokenize the combined text and create an attention mask
-            tokens = self.tokenizer.encode(
+            tokens = self.tokenizer(
                 text,
                 return_tensors="pt",
                 truncation=True,
-                max_length=512,
+                padding="max_length",
                 add_special_tokens=False,
+                max_length=512,
+                return_attention_mask=True,
             ).to(self.device)
-            mask = tokens.ne(self.tokenizer.pad_token_id).float().to(self.device)
 
             # Get the hidden states of the pretrained model
-            outputs = self.pretrained_model(tokens, attention_mask=mask)
+            outputs = self.pretrained_model(**tokens)
             last_hidden_state = outputs.last_hidden_state
 
             # Find the indices of separator tokens in the tokenized input
             sep_indices = (
-                (tokens.squeeze() == self.tokenizer.sep_token_id).nonzero().squeeze()
+                (tokens["input_ids"].squeeze() == self.tokenizer.sep_token_id)
+                .nonzero()
+                .squeeze()
             )
 
             # Extract the embeddings for each sentence
             embeddings = last_hidden_state[0, sep_indices]
+            # print(f"\n {text} {len(chunk)} {embeddings.shape}, {embeddings[0]}")
 
             # Apply the classifier to obtain logits
             logits = self.classifier(embeddings)
 
+            # if chunk consists of a single sentence, add the sentence dimension
             if logits.dim() == 1:
                 logits = logits.unsqueeze(0)
                 embeddings = embeddings.unsqueeze(0)

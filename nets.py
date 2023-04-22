@@ -49,11 +49,10 @@ class Net:
 
     def train(self, data: Dataset, epoch_callback=None):
         n_epoch = self.n_epoch
-        accumulation_steps = 8
+        accumulation_steps = 1
         self.model = self.net(
             self.params["model_name"],
             self.params["n_labels"],
-            # self.params["max_turn_length"],
         )
         self.model.train()
         optimizer = optim.AdamW(
