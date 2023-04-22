@@ -56,7 +56,8 @@ class SequentialSentenceClassifier(nn.Module):
         # Define a helper function to process chunks of dialogue
         def process_chunk(chunk: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
             # Combine the dialogue sentences using the separator token
-            sep_token = self.tokenizer.sep_token
+            sep_token_id = self.tokenizer.cls_token_id
+            sep_token = self.tokenizer.cls_token
             text = sep_token.join(chunk) + sep_token
 
             # Tokenize the combined text and create an attention mask
@@ -76,9 +77,7 @@ class SequentialSentenceClassifier(nn.Module):
 
             # Find the indices of separator tokens in the tokenized input
             sep_indices = (
-                (tokens["input_ids"].squeeze() == self.tokenizer.sep_token_id)
-                .nonzero()
-                .squeeze()
+                (tokens["input_ids"].squeeze() == sep_token_id).nonzero().squeeze()
             )
 
             # Extract the embeddings for each sentence
