@@ -38,8 +38,8 @@ class SequentialSentenceClassifier(nn.Module):
             pretrained_model_name, use_fast=True
         )
 
-        # for param in self.pretrained_model.parameters():
-        #     param.requires_grad = True
+        for param in self.pretrained_model.parameters():
+            param.requires_grad = False
 
         # Define an MLP classifier to map the hidden states to the desired number of classes
         self.classifier = MLP(self.pretrained_model.config.hidden_size, num_classes)
@@ -138,4 +138,5 @@ class SequentialSentenceClassifier(nn.Module):
         logits = torch.stack(all_logits)
         embeddings = torch.stack(all_embeddings)
 
+        # print(f"\n logits: {logits.shape}")
         return logits, embeddings

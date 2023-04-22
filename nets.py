@@ -70,7 +70,7 @@ class Net:
                 batch_labels = batch_labels.to(self.device)
                 logits, _ = self.model(batch_dialogues)
                 loss = self.loss_function(
-                    logits.view(-1, self.params["n_labels"]), batch_labels.view(-1)
+                    logits.view(-1, logits.size(-1)), batch_labels.view(-1)
                 )
                 loss = loss / accumulation_steps  # Normalize the loss
                 loss.backward()

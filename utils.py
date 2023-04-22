@@ -32,8 +32,8 @@ default_params: Params = {
         "n_labels": 4,
         "model_name": "distilbert-base-uncased",
         # "max_turn_length": 512,
-        "train_args": {"batch_size": 1, "num_workers": 0},
-        "test_args": {"batch_size": 1, "num_workers": 0},
+        "train_args": {"batch_size": 4, "num_workers": 0},
+        "test_args": {"batch_size": 100, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
     },
 }
