@@ -64,7 +64,7 @@ class SequentialSentenceClassifier(nn.Module):
                 text,
                 return_tensors="pt",
                 truncation=True,
-                padding="max_length",
+                padding="longest",
                 add_special_tokens=False,
                 max_length=512,
                 return_attention_mask=True,
