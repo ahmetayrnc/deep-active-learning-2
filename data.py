@@ -121,3 +121,26 @@ def get_SWDA() -> Tuple[MyDataset, MyDataset]:
 
 def get_DYDA() -> Tuple[MyDataset, MyDataset]:
     return get_silicone_dataset("dyda_da")
+
+
+def get_CSABS():
+    def convert(dataset: HF_Dataset) -> MyDataset:
+        return dataset["sentences"], dataset["labels"]
+
+    dataset_name = "allenai/csabstruct"
+    dataset_dir = f"data/{dataset_name}"
+
+    # Load the dataset
+    if os.path.exists(dataset_dir):
+        # load the dataset from disk
+        dataset = load_from_disk(dataset_dir)
+        print("Dataset loaded from disk")
+    else:
+        # load the dataset from Hugging Face and save it to disk
+        dataset = load_dataset(dataset_name)
+        dataset.save_to_disk(dataset_dir)
+        print("Dataset loaded from Hugging Face and saved to disk")
+
+    train = convert(dataset["train"])
+    test = convert(dataset["test"])
+    return train, test

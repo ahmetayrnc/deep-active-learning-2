@@ -1,6 +1,6 @@
 from typing import Tuple, Type
 from SequentialSentenceClassifier import SequentialSentenceClassifier
-from data import MyDataset, get_SWDA, get_DYDA
+from data import MyDataset, get_CSABS, get_SWDA, get_DYDA
 from nets import (
     Net,
     Params,
@@ -36,6 +36,13 @@ default_params: Params = {
         "test_args": {"batch_size": 100, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
     },
+    "CSABS": {
+        "n_labels": 5,
+        "model_name": "distilbert-base-uncased",
+        "train_args": {"batch_size": 4, "num_workers": 0},
+        "test_args": {"batch_size": 100, "num_workers": 0},
+        "optimizer_args": {"lr": 1e-5},
+    },
 }
 
 
@@ -43,6 +50,8 @@ def get_handler(name: str) -> Type[Dataset]:
     if name == "SWDA":
         return DialogueDataset
     if name == "DYDA":
+        return DialogueDataset
+    if name == "CSABS":
         return DialogueDataset
     else:
         raise NotImplementedError
@@ -55,6 +64,8 @@ def get_dataset(
         return get_SWDA()
     elif name == "DYDA":
         return get_DYDA()
+    elif name == "CSABS":
+        return get_CSABS()
     else:
         raise NotImplementedError
 
@@ -65,6 +76,8 @@ def get_net(name: str, device: str, n_epoch: int, params: Params) -> Net:
     if name == "SWDA":
         return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
     elif name == "DYDA":
+        return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
+    elif name == "CSABS":
         return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
     else:
         raise NotImplementedError

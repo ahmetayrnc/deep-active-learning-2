@@ -38,8 +38,8 @@ class SequentialSentenceClassifier(nn.Module):
             pretrained_model_name, use_fast=True
         )
 
-        for param in self.pretrained_model.parameters():
-            param.requires_grad = False
+        # for param in self.pretrained_model.parameters():
+        #     param.requires_grad = False
 
         # Define an MLP classifier to map the hidden states to the desired number of classes
         self.classifier = MLP(self.pretrained_model.config.hidden_size, num_classes)
@@ -56,8 +56,8 @@ class SequentialSentenceClassifier(nn.Module):
         # Define a helper function to process chunks of dialogue
         def process_chunk(chunk: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
             # Combine the dialogue sentences using the separator token
-            sep_token_id = self.tokenizer.cls_token_id
-            sep_token = self.tokenizer.cls_token
+            sep_token_id = self.tokenizer.sep_token_id
+            sep_token = self.tokenizer.sep_token
             text = sep_token.join(chunk) + sep_token
 
             # Tokenize the combined text and create an attention mask
@@ -82,7 +82,6 @@ class SequentialSentenceClassifier(nn.Module):
 
             # Extract the embeddings for each sentence
             embeddings = last_hidden_state[0, sep_indices]
-            # print(f"\n {text} {len(chunk)} {embeddings.shape}, {embeddings[0]}")
 
             # Apply the classifier to obtain logits
             logits = self.classifier(embeddings)
@@ -101,7 +100,7 @@ class SequentialSentenceClassifier(nn.Module):
             dialogue_embeddings = []
 
             # Split the dialogue into smaller chunks and process each chunk
-            chunk_size = 10  # Adjust this based on your specific use case
+            chunk_size = 12  # Adjust this based on your specific use case
             chunks = [
                 dialogue[i : i + chunk_size]
                 for i in range(0, len(dialogue), chunk_size)
@@ -137,5 +136,4 @@ class SequentialSentenceClassifier(nn.Module):
         logits = torch.stack(all_logits)
         embeddings = torch.stack(all_embeddings)
 
-        # print(f"\n logits: {logits.shape}")
         return logits, embeddings
