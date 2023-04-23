@@ -28,6 +28,9 @@ class MLP(nn.Module):
         return self.model(x)
 
 
+# self.classifier = MLP(self.pretrained_model.config.hidden_size, num_classes)
+
+
 class SequentialSentenceClassifier(nn.Module):
     def __init__(self, pretrained_model_name: str, num_classes: int):
         super(SequentialSentenceClassifier, self).__init__()
@@ -38,11 +41,10 @@ class SequentialSentenceClassifier(nn.Module):
             pretrained_model_name, use_fast=True
         )
 
-        # for param in self.pretrained_model.parameters():
-        #     param.requires_grad = False
-
-        # Define an MLP classifier to map the hidden states to the desired number of classes
-        self.classifier = MLP(self.pretrained_model.config.hidden_size, num_classes)
+        # Define a classifier to map the hidden states to the desired number of classes
+        self.classifier = nn.Linear(
+            self.pretrained_model.config.hidden_size, num_classes
+        )
 
         # Move everything to the appropriate device (GPU if available, otherwise CPU)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -55,19 +57,22 @@ class SequentialSentenceClassifier(nn.Module):
 
         # Define a helper function to process chunks of dialogue
         def process_chunk(chunk: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
+            # Truncate each sentence to a maximum of 320 characters
+            truncated_chunk = [sentence[:320] for sentence in chunk]
+
             # Combine the dialogue sentences using the separator token
             sep_token_id = self.tokenizer.sep_token_id
             sep_token = self.tokenizer.sep_token
-            text = sep_token.join(chunk) + sep_token
+            text = sep_token.join(truncated_chunk) + sep_token
 
-            # Tokenize the combined text and create an attention mask
+            # Tokenize the combined text
             tokens = self.tokenizer(
                 text,
                 return_tensors="pt",
                 truncation=True,
                 padding="longest",
                 add_special_tokens=False,
-                max_length=512,
+                max_length=4096,
                 return_attention_mask=True,
             ).to(self.device)
 
@@ -100,7 +105,7 @@ class SequentialSentenceClassifier(nn.Module):
             dialogue_embeddings = []
 
             # Split the dialogue into smaller chunks and process each chunk
-            chunk_size = 12  # Adjust this based on your specific use case
+            chunk_size = 50  # Adjust this based on your specific use case
             chunks = [
                 dialogue[i : i + chunk_size]
                 for i in range(0, len(dialogue), chunk_size)
