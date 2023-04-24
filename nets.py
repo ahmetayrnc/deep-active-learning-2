@@ -94,17 +94,18 @@ class Net:
         all_labels = []
         with torch.no_grad():
             for batch_dialogues, batch_labels in tqdm(loader):
-                logits, _ = self.model(batch_dialogues)
-                preds = torch.argmax(logits, dim=2).cpu().numpy()
-                labels = batch_labels.cpu().numpy()
+                batch_logits, _ = self.model(batch_dialogues)
+                batch_preds = torch.argmax(batch_logits, dim=2).cpu().numpy()
+                batch_labels = batch_labels.cpu().numpy()
 
+                print(f"\n preds shape: {batch_preds.shape}")
                 # Remove padding from the predictions based on the padded labels
-                valid_indices = labels != -1
+                valid_indices = batch_labels != -1
                 unpadded_preds = np.array(
-                    [pred[mask] for pred, mask in zip(preds, valid_indices)]
+                    [pred[mask] for pred, mask in zip(batch_preds, valid_indices)]
                 )
                 unpadded_labels = np.array(
-                    [label[mask] for label, mask in zip(labels, valid_indices)]
+                    [label[mask] for label, mask in zip(batch_labels, valid_indices)]
                 )
 
                 all_preds.extend(unpadded_preds)

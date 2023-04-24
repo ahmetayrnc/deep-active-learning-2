@@ -1,36 +1,8 @@
 import torch
 import torch.nn as nn
 from typing import List, Tuple
-from transformers import AutoModel, AutoTokenizer, PreTrainedModel
-
+from transformers import AutoModel, AutoTokenizer
 from nets import DatasetArgs
-
-
-class MLP(nn.Module):
-    def __init__(
-        self, input_size: int, num_classes: int, hidden_sizes: List[int] = None
-    ):
-        super(MLP, self).__init__()
-
-        if hidden_sizes is None:
-            hidden_sizes = [256, 128]
-
-        layers = []
-        prev_size = input_size
-
-        for hidden_size in hidden_sizes:
-            layers.append(nn.Linear(prev_size, hidden_size))
-            layers.append(nn.ReLU())
-            prev_size = hidden_size
-
-        layers.append(nn.Linear(hidden_sizes[-1], num_classes))
-        self.model = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.model(x)
-
-
-# self.classifier = MLP(self.pretrained_model.config.hidden_size, num_classes)
 
 
 class SequentialSentenceClassifier(nn.Module):
@@ -82,7 +54,6 @@ class SequentialSentenceClassifier(nn.Module):
                 truncation=True,
                 padding="longest",
                 add_special_tokens=False,
-                max_length=4096,
                 return_attention_mask=True,
             ).to(self.device)
 
@@ -109,21 +80,20 @@ class SequentialSentenceClassifier(nn.Module):
             return logits, embeddings
 
         # Process each dialogue in the input dialogues
-        max_len = max(len(dialogue) for dialogue in dialogues)
+        max_len_batch = max(len(dialogue) for dialogue in dialogues)
         for dialogue in dialogues:
             dialogue_logits = []
             dialogue_embeddings = []
 
             # Split the dialogue into smaller chunks and process each chunk
+            # chunk size = 6 mean, 6 turns per chunk
             chunk_size = int(
-                self.dialogue_length * 4 / self.dataset_params["turn_length"]
+                (self.dialogue_length * 4) / self.dataset_params["turn_length"]
             )
             chunks = [
                 dialogue[i : i + chunk_size]
                 for i in range(0, len(dialogue), chunk_size)
             ]
-            # if len(chunk) > 1:
-            # print(f"number of chunks: {len(chunks)}")
 
             for chunk in chunks:
                 logits, embeddings = process_chunk(chunk)
@@ -134,9 +104,9 @@ class SequentialSentenceClassifier(nn.Module):
             dialogue_logits = torch.cat(dialogue_logits)
             dialogue_embeddings = torch.cat(dialogue_embeddings)
 
-            # Pad the logits and embeddings to the same length
-            if dialogue_logits.size(0) < max_len:
-                pad_len = max_len - dialogue_logits.size(0)
+            # Pad the logits and embeddings to the same length, in order to have a orderly batch
+            if dialogue_logits.size(0) < max_len_batch:
+                pad_len = max_len_batch - dialogue_logits.size(0)
                 pad_logits = torch.zeros(pad_len, dialogue_logits.size(1)).to(
                     self.device
                 )
@@ -148,6 +118,7 @@ class SequentialSentenceClassifier(nn.Module):
                     [dialogue_embeddings, pad_embeddings], dim=0
                 )
 
+            # Append the logits and embeddings of the dialogue
             all_logits.append(dialogue_logits)
             all_embeddings.append(dialogue_embeddings)
 

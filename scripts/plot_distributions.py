@@ -32,7 +32,8 @@ def draw_distribution(data):
     plt.show()
 
 
-def array_statistics(arr):
+def array_statistics(arr, title="Array Statistics"):
+    # calculate statistics
     arr = np.array(arr)
     mean = np.mean(arr)
     median = np.median(arr)
@@ -64,35 +65,75 @@ def array_statistics(arr):
     print("Statistics Table:")
     print(stats_df.to_string(index=False))
 
-    fig, ax = plt.subplots(2, 2, figsize=(12, 8))
+    fig = plt.figure(figsize=(18, 8))
+    gs = fig.add_gridspec(2, 3)
 
-    # Line plot with mean and median
-    ax[0, 0].plot(arr, color="blue")
-    ax[0, 0].axhline(mean, color="red", linestyle="dashed", label="Mean")
-    ax[0, 0].axhline(median, color="green", linestyle="dashed", label="Median")
-    ax[0, 0].legend()
-    ax[0, 0].set_title("Line Plot with Mean and Median")
-    ax[0, 0].set_xlabel("Index")
-    ax[0, 0].set_ylabel("Value")
+    # Add subplots for plots
+    ax_hist = fig.add_subplot(gs[0, 0])
+    ax_box = fig.add_subplot(gs[0, 1])
+    ax_kde = fig.add_subplot(gs[1, 0])
+    ax_cumulative = fig.add_subplot(gs[1, 1])
 
     # Histogram
-    sns.histplot(arr, kde=False, ax=ax[0, 1], color="blue")
-    ax[0, 1].set_title("Histogram")
-    ax[0, 1].set_xlabel("Value")
-    ax[0, 1].set_ylabel("Frequency")
+    sns.histplot(arr, kde=False, ax=ax_hist, color="blue")
+    ax_hist.axvline(
+        percentile_90th, color="red", linestyle="dashed", label="90th Percentile"
+    )
+    ax_hist.legend()
+    ax_hist.set_title("Histogram")
+    ax_hist.set_xlabel("Length")
+    ax_hist.set_ylabel("Frequency")
 
     # Box plot
-    sns.boxplot(y=arr, ax=ax[1, 0], color="blue")
-    ax[1, 0].set_title("Box Plot")
-    ax[1, 0].set_ylabel("Value")
+    sns.boxplot(y=arr, ax=ax_box, color="blue")
+    ax_box.axhline(
+        percentile_90th, color="red", linestyle="dashed", label="90th Percentile"
+    )
+    ax_box.legend()
+    ax_box.set_title("Box Plot")
+    ax_box.set_ylabel("Length")
 
     # Kernel Density Estimation (KDE) plot
-    sns.kdeplot(arr, ax=ax[1, 1], color="blue")
-    ax[1, 1].set_title("Kernel Density Estimation Plot")
-    ax[1, 1].set_xlabel("Value")
-    ax[1, 1].set_ylabel("Density")
+    sns.kdeplot(arr, ax=ax_kde, color="blue")
+    ax_kde.axvline(
+        percentile_90th, color="red", linestyle="dashed", label="90th Percentile"
+    )
+    ax_kde.legend()
+    ax_kde.set_title("Kernel Density Estimation Plot")
+    ax_kde.set_xlabel("Length")
+    ax_kde.set_ylabel("Density")
+
+    # Cumulative Density Plot
+    sns.kdeplot(arr, cumulative=True, ax=ax_cumulative, color="blue")
+    ax_cumulative.axvline(
+        percentile_90th, color="red", linestyle="dashed", label="90th Percentile"
+    )
+    ax_cumulative.legend()
+    ax_cumulative.set_title("Cumulative Density Plot")
+    ax_cumulative.set_xlabel("Length")
+    ax_cumulative.set_ylabel("Cumulative Density")
+
+    # Prepare cell_text for the table with two columns
+    cell_text = []
+    for key, value in stats_data.items():
+        cell_text.append([key, f"{value[0]:.2f}"])
+
+    # Display statistics table as a subplot
+    ax_table = fig.add_subplot(gs[:, 2])
+    table = ax_table.table(
+        cellText=cell_text, colLabels=["Statistic", "Value"], loc="center"
+    )
+    ax_table.axis("off")
+    table.auto_set_font_size(False)
+    table.set_fontsize(12)
+    table.scale(1, 3)
+    ax_table.axis("off")
 
     fig.tight_layout()
+
+    # Add the title for all figures
+    fig.suptitle(title, fontsize=16, y=1.05)
+
     plt.show()
 
     return fig

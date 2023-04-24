@@ -81,10 +81,6 @@ def convert(
 ) -> MyDataset:
     def process_group(group):
         group_df = pd.DataFrame(group[1])
-        if len(group_df) > 512:
-            print(f"skipped dialogue: {group[0]}")
-            return None
-
         turns = group_df[x].tolist()
         labels = group_df[y].tolist()
 

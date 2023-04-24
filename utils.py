@@ -1,12 +1,7 @@
 from typing import Tuple, Type
 from SequentialSentenceClassifier import SequentialSentenceClassifier
 from data import MyDataset, get_CSABS, get_KPN, get_SWDA, get_DYDA
-from nets import (
-    Net,
-    Params,
-    # HierarchicalDialogueActClassifier,
-    # SequentialSentenceClassifier,
-)
+from nets import Net, Params
 from handlers import DialogueDataset
 from query_strategies.strategy import Strategy
 from torch.utils.data import Dataset
@@ -24,7 +19,6 @@ default_params: Params = {
         "n_labels": 46,
         "model_name": "allenai/longformer-base-4096",
         "turn_length": 80,
-        "dialogue_length": 4096,
         "train_args": {"batch_size": 1, "num_workers": 0},
         "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
@@ -33,14 +27,14 @@ default_params: Params = {
         "n_labels": 4,
         "model_name": "allenai/longformer-base-4096",
         "turn_length": 120,
-        "dialogue_length": 4096,
-        "train_args": {"batch_size": 4, "num_workers": 0},
-        "test_args": {"batch_size": 100, "num_workers": 0},
+        "train_args": {"batch_size": 2, "num_workers": 0},
+        "test_args": {"batch_size": 2, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
     },
     "CSABS": {
         "n_labels": 5,
         "model_name": "allenai/longformer-base-4096",
+        "turn_length": 224,
         "train_args": {"batch_size": 4, "num_workers": 0},
         "test_args": {"batch_size": 100, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
@@ -48,6 +42,7 @@ default_params: Params = {
     "KPN": {
         "n_labels": 19,
         "model_name": "allenai/longformer-base-4096",
+        "turn_length": 224,
         "train_args": {"batch_size": 1, "num_workers": 0},
         "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
@@ -56,16 +51,7 @@ default_params: Params = {
 
 
 def get_handler(name: str) -> Type[Dataset]:
-    if name == "SWDA":
-        return DialogueDataset
-    if name == "DYDA":
-        return DialogueDataset
-    if name == "CSABS":
-        return DialogueDataset
-    if name == "KPN":
-        return DialogueDataset
-    else:
-        raise NotImplementedError
+    return DialogueDataset
 
 
 def get_dataset(
@@ -86,16 +72,8 @@ def get_dataset(
 def get_net(name: str, device: str, n_epoch: int, params: Params) -> Net:
     if params == None:
         params = default_params
-    if name == "SWDA":
-        return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
-    elif name == "DYDA":
-        return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
-    elif name == "CSABS":
-        return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
-    elif name == "KPN":
-        return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
-    else:
-        raise NotImplementedError
+
+    return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
 
 
 def get_strategy(name: str) -> Type[Strategy]:
@@ -109,25 +87,5 @@ def get_strategy(name: str) -> Type[Strategy]:
         return AverageTurnUncertainty
     elif name == "MedianTurnUncertainty":
         return MedianTurnUncertainty
-    # elif name == "MarginSampling":
-    #     return MarginSampling
-    # elif name == "EntropySampling":
-    #     return EntropySampling
-    # elif name == "LeastConfidenceDropout":
-    #     return LeastConfidenceDropout
-    # elif name == "MarginSamplingDropout":
-    #     return MarginSamplingDropout
-    # elif name == "EntropySamplingDropout":
-    #     return EntropySamplingDropout
-    # elif name == "KMeansSampling":
-    #     return KMeansSampling
-    # elif name == "KCenterGreedy":
-    #     return KCenterGreedy
-    # elif name == "BALDDropout":
-    #     return BALDDropout
-    # elif name == "AdversarialBIM":
-    #     return AdversarialBIM
-    # elif name == "AdversarialDeepFool":
-    #     return AdversarialDeepFool
     else:
         raise NotImplementedError
