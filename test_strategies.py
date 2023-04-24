@@ -1,13 +1,14 @@
 import argparse
 import numpy as np
 import torch
-from HieararchicalDialogueActClassifier import HierarchicalDialogueActClassifier
 from data import Data
 from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
 import pandas as pd
 from transformers import logging as transformers_logging
+from SequentialSentenceClassifier import SequentialSentenceClassifier
+from utils import default_params
 
 
 def main(args: dict) -> pd.DataFrame:
@@ -43,11 +44,11 @@ def main(args: dict) -> pd.DataFrame:
 
     # load network and strategy
     print("Loading network...")
-    net = get_net(args["dataset_name"], device, 1)  # load network
+    if "params" not in args:
+        args["params"] = default_params
+    net = get_net(args["dataset_name"], device, 1, args["params"])  # load network
     # turn the model to train mode
-    net.model = HierarchicalDialogueActClassifier(
-        net.params["model_name"], net.params["n_labels"]
-    )
+    net.model = SequentialSentenceClassifier(default_params[args["dataset_name"]])
     net.model.train()
     print(f"Network loaded.")
 

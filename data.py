@@ -40,14 +40,17 @@ class Data:
 
     def get_labeled_data(self) -> Tuple[np.ndarray, Dataset]:
         labeled_idxs: np.ndarray = np.arange(self.n_pool)[self.labeled_idxs]
-        indexed: MyDataset = self.train[0][labeled_idxs], self.train[1][labeled_idxs]
+        indexed: MyDataset = (
+            [self.train[0][i] for i in labeled_idxs],
+            [self.train[1][i] for i in labeled_idxs],
+        )
         return labeled_idxs, self.handler(indexed)
 
     def get_unlabeled_data(self) -> Tuple[np.ndarray, Dataset]:
         unlabeled_idxs = np.arange(self.n_pool)[~self.labeled_idxs]
         indexed: MyDataset = (
-            self.train[0][unlabeled_idxs],
-            self.train[1][unlabeled_idxs],
+            [self.train[0][i] for i in unlabeled_idxs],
+            [self.train[1][i] for i in unlabeled_idxs],
         )
         return unlabeled_idxs, self.handler(indexed)
 
