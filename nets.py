@@ -63,7 +63,7 @@ class Net:
         for epoch in range(n_epoch):
             epoch_loss = 0.0
 
-            a = tqdm(loader, ncols=100)  # , desc=f"Epoch loss: {epoch_loss:.4f}")
+            a = tqdm(loader, ncols=100, desc=f"Epoch loss: {epoch_loss:.4f}")
             for step, (batch_dialogues, batch_labels) in enumerate(a):
                 batch_labels = batch_labels.to(self.device)
                 batch_logits, _ = self.model(batch_dialogues)

@@ -24,9 +24,8 @@ class Data:
         test: MyDataset,
         handler: Type[Dataset],
     ):
-        self.train = np.array(train[0], dtype=object), np.array(train[1], dtype=object)
-        self.test = np.array(test[0], dtype=object), np.array(test[1], dtype=object)
-
+        self.train = train
+        self.test = test
         self.handler = handler
         self.n_pool = len(train[1])
         self.n_test = len(test[1])
@@ -93,6 +92,8 @@ def convert(
     grouped = df.groupby(group)
     results = list(map(process_group, grouped))
     all_turns, all_labels = zip(*[r for r in results if r is not None])
+    all_turns = list(all_turns)
+    all_labels = list(all_labels)
     return all_turns, all_labels
 
 
