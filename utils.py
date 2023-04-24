@@ -43,6 +43,7 @@ default_params: Params = {
         "n_labels": 19,
         "model_name": "allenai/longformer-base-4096",
         "turn_length": 224,
+        "dialogue_length": 3072,
         "train_args": {"batch_size": 1, "num_workers": 0},
         "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
