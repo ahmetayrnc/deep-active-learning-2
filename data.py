@@ -122,10 +122,23 @@ def get_silicone_dataset(dataset_name: str):
 
 
 def get_KPN() -> Tuple[MyDataset, MyDataset]:
-    train = pd.read_csv("data/kpn/train.csv")
-    test = pd.read_csv("data/kpn/test.csv")
-    train = convert(train, x="text", y="label", group="conversation_id")
-    test = convert(test, x="text", y="label", group="conversation_id")
+    def convert(dataset: HF_Dataset) -> MyDataset:
+        return dataset["text"], dataset["label"]
+
+    dataset_name = "kpn"
+    dataset_dir = f"data/{dataset_name}"
+
+    # Load the dataset
+    if os.path.exists(dataset_dir):
+        # load the dataset from disk
+        dataset = load_from_disk(dataset_dir)
+        print("Dataset loaded from disk")
+    else:
+        print("Need the kpn dataset to exist")
+        return None
+
+    train = convert(dataset["train"])
+    test = convert(dataset["test"])
     return train, test
 
 
