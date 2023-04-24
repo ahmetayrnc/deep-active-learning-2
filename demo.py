@@ -38,7 +38,14 @@ def main(args: dict) -> pd.DataFrame:
 
     # load network and strategy
     print("Loading network and strategy...")
-    net = get_net(args["dataset_name"], device, args["n_epoch"])  # load network
+    if "params" not in args:
+        args["params"] = None
+    net = get_net(
+        name=args["dataset_name"],
+        device=device,
+        n_epoch=args["n_epoch"],
+        params=args["params"],
+    )  # load network
     strategy = get_strategy(args["strategy_name"])(dataset, net)  # load strategy
     print(f"Network and strategy loaded.")
 
