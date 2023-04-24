@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import pandas as pd
+from matplotlib.axes import Axes
 
 
 def draw_distribution(data):
@@ -61,18 +61,14 @@ def array_statistics(arr, title="Array Statistics"):
         "Max": [max_val],
     }
 
-    stats_df = pd.DataFrame(stats_data)
-    print("Statistics Table:")
-    print(stats_df.to_string(index=False))
-
     fig = plt.figure(figsize=(18, 8))
     gs = fig.add_gridspec(2, 3)
 
     # Add subplots for plots
-    ax_hist = fig.add_subplot(gs[0, 0])
-    ax_box = fig.add_subplot(gs[0, 1])
-    ax_kde = fig.add_subplot(gs[1, 0])
-    ax_cumulative = fig.add_subplot(gs[1, 1])
+    ax_hist: Axes = fig.add_subplot(gs[0, 0])
+    ax_box: Axes = fig.add_subplot(gs[0, 1])
+    ax_kde: Axes = fig.add_subplot(gs[1, 0])
+    ax_cumulative: Axes = fig.add_subplot(gs[1, 1])
 
     # Histogram
     sns.histplot(arr, kde=False, ax=ax_hist, color="blue")
@@ -119,7 +115,7 @@ def array_statistics(arr, title="Array Statistics"):
         cell_text.append([key, f"{value[0]:.2f}"])
 
     # Display statistics table as a subplot
-    ax_table = fig.add_subplot(gs[:, 2])
+    ax_table: Axes = fig.add_subplot(gs[:, 2])
     table = ax_table.table(
         cellText=cell_text, colLabels=["Statistic", "Value"], loc="center"
     )
