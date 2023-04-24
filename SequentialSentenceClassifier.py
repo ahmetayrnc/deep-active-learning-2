@@ -82,9 +82,6 @@ class SequentialSentenceClassifier(nn.Module):
         # Process each dialogue in the input dialogues
         max_len_batch = max(len(dialogue) for dialogue in dialogues)
         for dialogue in dialogues:
-            # Clear GPU cache before processing each dialogue
-            torch.cuda.empty_cache()
-
             dialogue_logits = []
             dialogue_embeddings = []
 
