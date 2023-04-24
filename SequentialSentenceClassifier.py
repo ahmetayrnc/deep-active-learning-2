@@ -3,6 +3,7 @@ import torch.nn as nn
 from typing import List, Tuple
 from transformers import AutoModel, AutoTokenizer
 from nets import DatasetArgs
+import gc
 
 
 class SequentialSentenceClassifier(nn.Module):
@@ -96,6 +97,8 @@ class SequentialSentenceClassifier(nn.Module):
             ]
 
             for chunk in chunks:
+                gc.collect()
+                torch.cuda.empty_cache()
                 logits, embeddings = process_chunk(chunk)
                 dialogue_logits.append(logits)
                 dialogue_embeddings.append(embeddings)
