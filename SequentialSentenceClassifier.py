@@ -97,8 +97,6 @@ class SequentialSentenceClassifier(nn.Module):
             ]
 
             for chunk in chunks:
-                gc.collect()
-                torch.cuda.empty_cache()
                 logits, embeddings = process_chunk(chunk)
                 dialogue_logits.append(logits)
                 dialogue_embeddings.append(embeddings)
