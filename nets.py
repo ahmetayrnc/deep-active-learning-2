@@ -26,9 +26,10 @@ class OptimizerArgs(TypedDict):
 
 
 class DatasetArgs(TypedDict):
-    n_epoch: int
     n_labels: int
     model_name: str
+    turn_length: int
+    dialogue_length: int
     train_args: TrainArgs
     test_args: TestArgs
     optimizer_args: OptimizerArgs
@@ -50,10 +51,7 @@ class Net:
     def train(self, data: Dataset, epoch_callback=None):
         n_epoch = self.n_epoch
         accumulation_steps = 1
-        self.model = self.net(
-            self.params["model_name"],
-            self.params["n_labels"],
-        )
+        self.model = self.net(self.params)
         self.model.train()
         optimizer = optim.AdamW(
             self.model.parameters(), **self.params["optimizer_args"]

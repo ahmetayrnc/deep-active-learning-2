@@ -1,6 +1,6 @@
 from typing import Tuple, Type
 from SequentialSentenceClassifier import SequentialSentenceClassifier
-from data import MyDataset, get_CSABS, get_SWDA, get_DYDA
+from data import MyDataset, get_CSABS, get_KPN, get_SWDA, get_DYDA
 from nets import (
     Net,
     Params,
@@ -22,25 +22,34 @@ from query_strategies import (
 default_params: Params = {
     "SWDA": {
         "n_labels": 46,
-        "model_name": "distilbert-base-uncased",
-        # "max_turn_length": 80,
+        "model_name": "allenai/longformer-base-4096",
+        "turn_length": 80,
+        "dialogue_length": 4096,
         "train_args": {"batch_size": 1, "num_workers": 0},
         "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
     },
     "DYDA": {
         "n_labels": 4,
-        "model_name": "distilbert-base-uncased",
-        # "max_turn_length": 512,
+        "model_name": "allenai/longformer-base-4096",
+        "turn_length": 120,
+        "dialogue_length": 4096,
         "train_args": {"batch_size": 4, "num_workers": 0},
         "test_args": {"batch_size": 100, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
     },
     "CSABS": {
         "n_labels": 5,
-        "model_name": "distilbert-base-uncased",
+        "model_name": "allenai/longformer-base-4096",
         "train_args": {"batch_size": 4, "num_workers": 0},
         "test_args": {"batch_size": 100, "num_workers": 0},
+        "optimizer_args": {"lr": 1e-5},
+    },
+    "KPN": {
+        "n_labels": 19,
+        "model_name": "allenai/longformer-base-4096",
+        "train_args": {"batch_size": 1, "num_workers": 0},
+        "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
     },
 }
@@ -52,6 +61,8 @@ def get_handler(name: str) -> Type[Dataset]:
     if name == "DYDA":
         return DialogueDataset
     if name == "CSABS":
+        return DialogueDataset
+    if name == "KPN":
         return DialogueDataset
     else:
         raise NotImplementedError
@@ -66,6 +77,8 @@ def get_dataset(
         return get_DYDA()
     elif name == "CSABS":
         return get_CSABS()
+    elif name == "KPN":
+        return get_KPN()
     else:
         raise NotImplementedError
 
@@ -78,6 +91,8 @@ def get_net(name: str, device: str, n_epoch: int, params: Params) -> Net:
     elif name == "DYDA":
         return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
     elif name == "CSABS":
+        return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
+    elif name == "KPN":
         return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
     else:
         raise NotImplementedError

@@ -69,6 +69,10 @@ def main(args: dict) -> pd.DataFrame:
     return results
 
 
+# TODO:
+# LONGFORMER IS GOOD
+# THE TASK IS DOCUMENT SEGMENTATION
+# TRY IT ON KPN DATASET
 if __name__ == "__main__":
     # parse arguments
     parser = argparse.ArgumentParser()
@@ -83,7 +87,7 @@ if __name__ == "__main__":
         "--dataset_name",
         type=str,
         default="SWDA",
-        choices=["SWDA", "DYDA", "CSABS"],
+        choices=["SWDA", "DYDA", "CSABS", "KPN"],
         help="dataset to use",
     )
     args = parser.parse_args()

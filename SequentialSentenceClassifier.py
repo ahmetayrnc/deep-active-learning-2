@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 from typing import List, Tuple
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModel, AutoTokenizer, PreTrainedModel
+
+from nets import DatasetArgs
 
 
 class MLP(nn.Module):
@@ -32,19 +34,25 @@ class MLP(nn.Module):
 
 
 class SequentialSentenceClassifier(nn.Module):
-    def __init__(self, pretrained_model_name: str, num_classes: int):
+    def __init__(self, params: DatasetArgs):
         super(SequentialSentenceClassifier, self).__init__()
+        self.dataset_params = params
 
         # Load a pretrained model and its tokenizer
-        self.pretrained_model = AutoModel.from_pretrained(pretrained_model_name)
+        self.pretrained_model = AutoModel.from_pretrained(params["model_name"])
         self.tokenizer = AutoTokenizer.from_pretrained(
-            pretrained_model_name, use_fast=True
+            params["model_name"], use_fast=True
         )
 
         # Define a classifier to map the hidden states to the desired number of classes
         self.classifier = nn.Linear(
-            self.pretrained_model.config.hidden_size, num_classes
+            self.pretrained_model.config.hidden_size, params["n_labels"]
         )
+
+        if "dialogue_length" not in params:
+            self.dialogue_length = self.pretrained_model.config.max_position_embeddings
+        else:
+            self.dialogue_length = params["dialogue_length"]
 
         # Move everything to the appropriate device (GPU if available, otherwise CPU)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -57,8 +65,10 @@ class SequentialSentenceClassifier(nn.Module):
 
         # Define a helper function to process chunks of dialogue
         def process_chunk(chunk: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
-            # Truncate each sentence to a maximum of 320 characters
-            truncated_chunk = [sentence[:320] for sentence in chunk]
+            # Truncate each sentence to a maximum of turn_length characters
+            truncated_chunk = [
+                sentence[: self.dataset_params["turn_length"]] for sentence in chunk
+            ]
 
             # Combine the dialogue sentences using the separator token
             sep_token_id = self.tokenizer.sep_token_id
@@ -105,11 +115,15 @@ class SequentialSentenceClassifier(nn.Module):
             dialogue_embeddings = []
 
             # Split the dialogue into smaller chunks and process each chunk
-            chunk_size = 50  # Adjust this based on your specific use case
+            chunk_size = int(
+                self.dialogue_length * 4 / self.dataset_params["turn_length"]
+            )
             chunks = [
                 dialogue[i : i + chunk_size]
                 for i in range(0, len(dialogue), chunk_size)
             ]
+            # if len(chunk) > 1:
+            # print(f"number of chunks: {len(chunks)}")
 
             for chunk in chunks:
                 logits, embeddings = process_chunk(chunk)

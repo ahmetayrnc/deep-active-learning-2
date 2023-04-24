@@ -76,20 +76,25 @@ class Data:
         }
 
 
-def convert(dataset: HF_Dataset) -> MyDataset:
+def convert(
+    dataset: HF_Dataset, x="Utterance", y="Label", group="Dialogue_ID"
+) -> MyDataset:
     def process_group(group):
         group_df = pd.DataFrame(group[1])
         if len(group_df) > 512:
             print(f"skipped dialogue: {group[0]}")
             return None
 
-        turns = group_df["Utterance"].tolist()
-        labels = group_df["Label"].tolist()
+        turns = group_df[x].tolist()
+        labels = group_df[y].tolist()
 
         return turns, labels
 
-    df = dataset.to_pandas()
-    grouped = df.groupby("Dialogue_ID")
+    if not isinstance(dataset, pd.DataFrame):
+        df = dataset.to_pandas()
+    else:
+        df = dataset
+    grouped = df.groupby(group)
     results = list(map(process_group, grouped))
     all_turns, all_labels = zip(*[r for r in results if r is not None])
     return all_turns, all_labels
@@ -112,6 +117,14 @@ def get_silicone_dataset(dataset_name: str):
 
     train = convert(dataset["train"])
     test = convert(dataset["test"])
+    return train, test
+
+
+def get_KPN() -> Tuple[MyDataset, MyDataset]:
+    train = pd.read_csv("data/kpn/train.csv")
+    test = pd.read_csv("data/kpn/test.csv")
+    train = convert(train, x="text", y="label", group="conversation_id")
+    test = convert(test, x="text", y="label", group="conversation_id")
     return train, test
 
 
