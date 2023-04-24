@@ -82,9 +82,6 @@ class Net:
                 # Scale the loss back
                 epoch_loss += batch_loss.detach() * accumulation_steps
 
-                # Delete temporary variables after usage
-                del batch_dialogues, batch_labels, batch_logits, batch_loss
-
                 a.set_description(f"Epoch loss: {epoch_loss:.4f}")
 
             if epoch_callback:

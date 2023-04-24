@@ -3,7 +3,6 @@ import torch.nn as nn
 from typing import List, Tuple
 from transformers import AutoModel, AutoTokenizer
 from nets import DatasetArgs
-import gc
 
 
 class SequentialSentenceClassifier(nn.Module):
