@@ -63,21 +63,24 @@ class Net:
         for epoch in range(n_epoch):
             epoch_loss = 0.0
 
-            a = tqdm(loader, ncols=100, desc=f"Epoch loss: {epoch_loss:.4f}")
+            a = tqdm(loader, ncols=100)  # , desc=f"Epoch loss: {epoch_loss:.4f}")
             for step, (batch_dialogues, batch_labels) in enumerate(a):
                 batch_labels = batch_labels.to(self.device)
-                logits, _ = self.model(batch_dialogues)
-                loss = self.loss_function(
-                    logits.view(-1, logits.size(-1)), batch_labels.view(-1)
+                batch_logits, _ = self.model(batch_dialogues)
+                batch_loss = self.loss_function(
+                    batch_logits.view(-1, batch_logits.size(-1)), batch_labels.view(-1)
                 )
-                loss = loss / accumulation_steps  # Normalize the loss
-                loss.backward()
+
+                # Normalize the loss
+                batch_loss = batch_loss / accumulation_steps
+                batch_loss.backward()
 
                 if (step + 1) % accumulation_steps == 0:
                     optimizer.step()
                     optimizer.zero_grad()
 
-                epoch_loss += loss.item() * accumulation_steps  # Scale the loss back
+                # Scale the loss back
+                epoch_loss += batch_loss.detach() * accumulation_steps
 
                 a.set_description(f"Epoch loss: {epoch_loss:.4f}")
 
@@ -98,7 +101,6 @@ class Net:
                 batch_preds = torch.argmax(batch_logits, dim=2).cpu().numpy()
                 batch_labels = batch_labels.cpu().numpy()
 
-                print(f"\n preds shape: {batch_preds.shape}")
                 # Remove padding from the predictions based on the padded labels
                 valid_indices = batch_labels != -1
                 unpadded_preds = np.array(

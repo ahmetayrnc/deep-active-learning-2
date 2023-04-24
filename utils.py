@@ -27,8 +27,8 @@ default_params: Params = {
         "n_labels": 4,
         "model_name": "allenai/longformer-base-4096",
         "turn_length": 120,
-        "train_args": {"batch_size": 2, "num_workers": 0},
-        "test_args": {"batch_size": 2, "num_workers": 0},
+        "train_args": {"batch_size": 1, "num_workers": 0},
+        "test_args": {"batch_size": 1, "num_workers": 0},
         "optimizer_args": {"lr": 1e-5},
     },
     "CSABS": {
