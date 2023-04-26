@@ -29,7 +29,6 @@ class DatasetArgs(TypedDict):
     n_labels: int
     model_name: str
     turn_length: int
-    dialogue_length: int
     train_args: TrainArgs
     test_args: TestArgs
     optimizer_args: OptimizerArgs

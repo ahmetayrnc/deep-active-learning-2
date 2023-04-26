@@ -21,10 +21,7 @@ class SequentialSentenceClassifier(nn.Module):
             self.pretrained_model.config.hidden_size, params["n_labels"]
         )
 
-        if "dialogue_length" not in params:
-            self.dialogue_length = self.pretrained_model.config.max_position_embeddings
-        else:
-            self.dialogue_length = params["dialogue_length"]
+        self.dialogue_length = self.pretrained_model.config.max_position_embeddings
 
         # Move everything to the appropriate device (GPU if available, otherwise CPU)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
