@@ -44,14 +44,7 @@ def main(args: dict) -> pd.DataFrame:
 
     # load network and strategy
     print("Loading network and strategy...")
-    if "params" not in args:
-        args["params"] = None
-    net = get_net(
-        name=args["dataset_name"],
-        device=device,
-        n_epoch=args["n_epoch"],
-        params=args["params"],
-    )  # load network
+    net = get_net(name=args["dataset_name"], device=device, n_epoch=args["n_epoch"])
     strategy = get_strategy(args["strategy_name"])(dataset, net)  # load strategy
     print(f"Network and strategy loaded.")
 
@@ -115,6 +108,7 @@ def main(args: dict) -> pd.DataFrame:
             "query_elapsed_time": query_elapsed_time,
             "elapsed_time": cumulative_elapsed_time,
         }
+        round_summary.update(args)
         round_summary.update(metrics)
         results.append(round_summary)
 

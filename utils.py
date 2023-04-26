@@ -69,7 +69,7 @@ def get_dataset(
         raise NotImplementedError
 
 
-def get_net(name: str, device: str, n_epoch: int, params: Params) -> Net:
+def get_net(name: str, device: str, n_epoch: int, params: Params = None) -> Net:
     if params == None:
         params = default_params
 
