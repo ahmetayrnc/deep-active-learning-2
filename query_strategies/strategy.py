@@ -16,9 +16,9 @@ class Strategy:
         if neg_idxs:
             self.dataset.labeled_idxs[neg_idxs] = False
 
-    def train(self):
+    def train(self) -> float:
         labeled_idxs, labeled_data = self.dataset.get_labeled_data()
-        self.net.train(labeled_data)
+        return self.net.train(labeled_data)
 
     def predict(self, data: Dataset):
         preds = self.net.predict(data)

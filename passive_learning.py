@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import numpy as np
 import torch
 from data import Data
@@ -12,6 +13,10 @@ from transformers import logging as transformers_logging
 def main(args: dict) -> pd.DataFrame:
     print("[INFO] Running experiment with the following arguments:")
     pprint(args)
+
+    # get current date time
+    current_time = datetime.datetime.now()
+    startdate = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
     # set environment variable to disable parallelism in tokenizers
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -52,10 +57,10 @@ def main(args: dict) -> pd.DataFrame:
 
     results = []
 
-    def epoch_metrics():
+    def epoch_metrics(epoch_loss: float):
         y_pred = net.predict(dataset.get_test_data())
         metrics = dataset.cal_test_metrics(y_pred)
-        metrics.update(args)
+        metrics["epoch_loss"] = epoch_loss
         results.append(metrics)
 
     # train network
@@ -63,16 +68,13 @@ def main(args: dict) -> pd.DataFrame:
     net.train(train_data, epoch_callback=epoch_metrics)
 
     results = pd.DataFrame(results)
+    results = results.assign(startdate=startdate)
     results.reset_index(inplace=True)
     results.rename(columns={"index": "epoch"}, inplace=True)
 
     return results
 
 
-# TODO:
-# LONGFORMER IS GOOD
-# THE TASK IS DOCUMENT SEGMENTATION
-# TRY IT ON KPN DATASET
 if __name__ == "__main__":
     # parse arguments
     parser = argparse.ArgumentParser()

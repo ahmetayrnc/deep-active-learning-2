@@ -1,4 +1,4 @@
-from typing import Type, TypedDict, Dict, List
+from typing import Callable, Type, TypedDict, Dict, List
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -48,7 +48,9 @@ class Net:
         self.loss_function = nn.CrossEntropyLoss(ignore_index=-1)
         self.n_epoch = n_epoch
 
-    def train(self, data: Dataset, epoch_callback=None):
+    def train(
+        self, data: Dataset, epoch_callback: Callable[[float], None] = None
+    ) -> float:
         n_epoch = self.n_epoch
         accumulation_steps = 1
         self.model = self.net(self.params)
@@ -60,6 +62,7 @@ class Net:
             data, shuffle=True, collate_fn=string_collator, **self.params["train_args"]
         )
 
+        epoch_loss = 0.0
         for epoch in range(n_epoch):
             epoch_loss = 0.0
 
@@ -85,7 +88,9 @@ class Net:
                 a.set_description(f"Epoch loss: {epoch_loss:.4f}")
 
             if epoch_callback:
-                epoch_callback()
+                epoch_callback(epoch_loss)
+
+        return epoch_loss
 
     def predict(self, data: Dataset) -> np.ndarray:
         self.model.eval()

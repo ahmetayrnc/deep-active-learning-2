@@ -1,10 +1,12 @@
 import argparse
+import datetime
 import numpy as np
 import torch
 from data import Data
 from utils import get_dataset, get_handler, get_net, get_strategy
 from pprint import pprint
 import os
+import time
 import pandas as pd
 from transformers import logging as transformers_logging
 
@@ -12,6 +14,10 @@ from transformers import logging as transformers_logging
 def main(args: dict) -> pd.DataFrame:
     print("[INFO] Running experiment with the following arguments:")
     pprint(args)
+
+    # get current date time
+    current_time = datetime.datetime.now()
+    startdate = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
     # set environment variable to disable parallelism in tokenizers
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -77,19 +83,22 @@ def main(args: dict) -> pd.DataFrame:
     results.append(round_summary)
 
     # start active learning
+    start_time = time.time()
     for rd in range(1, args["n_round"] + 1):
         print(f"Round {rd}")
 
         # query
         print("Querying...")
+        query_start_time = time.time()
         query_idxs = strategy.query(args["n_query"])
+        query_elapsed_time = time.time() - query_start_time
 
         # update labels
         print("Updating labels...")
         strategy.update(query_idxs)
 
         print("Training...")
-        strategy.train()
+        training_loss = strategy.train()
 
         # calculate accuracy
         preds = strategy.predict(dataset.get_test_data())
@@ -97,15 +106,21 @@ def main(args: dict) -> pd.DataFrame:
         print(f"Round {rd} testing metrics: {metrics}")
 
         # collect information about the round
+        labeled_data_size = dataset.get_labeled_data()[0].shape[0]
+        cumulative_elapsed_time = time.time() - start_time
         round_summary = {
-            "experiment": experiment_name,
             "round": rd,
+            "training_loss": training_loss,
+            "labeled_data": labeled_data_size,
+            "query_elapsed_time": query_elapsed_time,
+            "elapsed_time": cumulative_elapsed_time,
         }
-        round_summary.update(args)
         round_summary.update(metrics)
         results.append(round_summary)
 
     results = pd.DataFrame(results)
+    results = results.assign(startdate=startdate, experiment=experiment_name)
+
     return results
 
 
