@@ -1,4 +1,7 @@
 {
-    "python.formatting.provider": "black",
-    "git.enabled": false
+    "python.formatting.provider": "none",
+    "git.enabled": false,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    }
 }

@@ -1,6 +1,0 @@
-{
-    "n_epoch": 10,
-    "fraction": 0.4,
-    "dataset_name": "SWDA",
-    "seed": 1
-}
