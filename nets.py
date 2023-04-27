@@ -128,13 +128,11 @@ class Net:
 
         all_probs = []
         with torch.no_grad():
-            for batch_dialogues, batch_labels in tqdm(loader):
+            for batch_dialogues, batch_labels in loader:
                 logits, _ = self.model(batch_dialogues)
                 probs = F.softmax(logits, dim=2)
                 probs = probs.cpu().numpy()
                 all_probs.extend(probs)
-
-        # all_probs = np.concatenate(all_probs, axis=None)
 
         return all_probs
 
