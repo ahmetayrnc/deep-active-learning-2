@@ -71,7 +71,7 @@ if __name__ == "__main__":
         "--dataset_name",
         type=str,
         default="SWDA",
-        choices=["SWDA", "DYDA", "CSABS", "KPN"],
+        choices=["SWDA", "DYDA", "KPN"],
         help="dataset",
     )
     parser.add_argument(
