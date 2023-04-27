@@ -86,7 +86,7 @@ class Net:
             if epoch_callback:
                 epoch_callback(epoch_loss)
 
-        return epoch_loss
+        return float(epoch_loss.cpu())
 
     def predict(self, data: Dataset) -> np.ndarray:
         self.model.eval()
