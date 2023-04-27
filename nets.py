@@ -81,12 +81,12 @@ class Net:
                     optimizer.zero_grad()
 
                 # Scale the loss back
-                epoch_loss += batch_loss.detach() * accumulation_steps
+                epoch_loss += batch_loss.detach().item() * accumulation_steps
 
             if epoch_callback:
                 epoch_callback(epoch_loss)
 
-        return float(epoch_loss.cpu())
+        return epoch_loss
 
     def predict(self, data: Dataset) -> np.ndarray:
         self.model.eval()
