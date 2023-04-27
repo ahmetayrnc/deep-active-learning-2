@@ -62,11 +62,10 @@ class Net:
         )
 
         epoch_loss = 0.0
-        for epoch in range(n_epoch):
+        for epoch in tqdm(range(n_epoch)):
             epoch_loss = 0.0
 
-            a = tqdm(loader, ncols=100, desc=f"Epoch loss: {epoch_loss:.4f}")
-            for step, (batch_dialogues, batch_labels) in enumerate(a):
+            for step, (batch_dialogues, batch_labels) in enumerate(loader):
                 batch_labels = batch_labels.to(self.device)
                 batch_logits, _ = self.model(batch_dialogues)
                 batch_loss = self.loss_function(
@@ -84,8 +83,6 @@ class Net:
                 # Scale the loss back
                 epoch_loss += batch_loss.detach() * accumulation_steps
 
-                a.set_description(f"Epoch loss: {epoch_loss:.4f}")
-
             if epoch_callback:
                 epoch_callback(epoch_loss)
 
@@ -100,7 +97,7 @@ class Net:
         all_preds = []
         all_labels = []
         with torch.no_grad():
-            for batch_dialogues, batch_labels in tqdm(loader):
+            for batch_dialogues, batch_labels in loader:
                 batch_logits, _ = self.model(batch_dialogues)
                 batch_preds = torch.argmax(batch_logits, dim=2).cpu().numpy()
                 batch_labels = batch_labels.cpu().numpy()
