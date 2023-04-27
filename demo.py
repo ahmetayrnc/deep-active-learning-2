@@ -61,25 +61,24 @@ def main(args: dict) -> pd.DataFrame:
 
     # round 0 accuracy
     print("Round 0")
-    strategy.train()
+    training_loss = strategy.train()
     preds = strategy.predict(dataset.get_test_data())
     metrics = dataset.cal_test_metrics(preds)
     print(f"Round 0 testing metrics: {metrics}")
 
     # collect information about the round
     round_summary = {
-        "experiment": experiment_name,
         "round": 0,
+        "training_loss": training_loss,
+        "labeled_data": dataset.get_labeled_data()[0].shape[0],
+        "query_elapsed_time": 0,
+        "elapsed_time": 0,
     }
     round_summary.update(args)
     round_summary.update(metrics)
     results.append(round_summary)
 
     # start active learning
-    training_loss = 0
-    labeled_data_size = dataset.get_labeled_data()[0].shape[0]
-    query_elapsed_time = 0
-    cumulative_elapsed_time = 0
     start_time = time.time()
     for rd in range(1, args["n_round"] + 1):
         print(f"Round {rd}")

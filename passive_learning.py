@@ -60,6 +60,7 @@ def main(args: dict) -> pd.DataFrame:
         epoch_summary.update(args)
         epoch_summary.update(metrics)
         epoch_summary["epoch_loss"] = epoch_loss
+        results.append(epoch_summary)
 
     # train network
     _, train_data = dataset.get_train_data()
