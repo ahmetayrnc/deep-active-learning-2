@@ -56,9 +56,10 @@ def main(args: dict) -> pd.DataFrame:
     def epoch_metrics(epoch_loss: float):
         y_pred = net.predict(dataset.get_test_data())
         metrics = dataset.cal_test_metrics(y_pred)
-        metrics.update(args)
-        metrics["epoch_loss"] = epoch_loss
-        results.append(metrics)
+        epoch_summary = {}
+        epoch_summary.update(args)
+        epoch_summary.update(metrics)
+        epoch_summary["epoch_loss"] = epoch_loss
 
     # train network
     _, train_data = dataset.get_train_data()

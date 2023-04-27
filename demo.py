@@ -76,6 +76,10 @@ def main(args: dict) -> pd.DataFrame:
     results.append(round_summary)
 
     # start active learning
+    training_loss = 0
+    labeled_data_size = dataset.get_labeled_data()[0].shape[0]
+    query_elapsed_time = 0
+    cumulative_elapsed_time = 0
     start_time = time.time()
     for rd in range(1, args["n_round"] + 1):
         print(f"Round {rd}")
