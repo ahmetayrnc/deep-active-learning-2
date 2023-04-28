@@ -36,11 +36,11 @@ def main(args: dict) -> pd.DataFrame:
     train, test = get_dataset(args["dataset_name"])
     print(f"Dataset loaded.")
 
-    number_of_samples = 6
+    number_of_samples = 20
     train = train[0][:number_of_samples], train[1][:number_of_samples]
     handler = get_handler(args["dataset_name"])
     dataset = Data(train, test, handler)
-    print(f"Number of samples to train on: {number_of_samples}")
+    print(f"Number of samples: {number_of_samples}")
 
     # load network and strategy
     print("Loading network...")
@@ -59,7 +59,7 @@ def main(args: dict) -> pd.DataFrame:
     # start experiment
     dataset.initialize_labels(0)
 
-    query_idxs = strategy.query(1)
+    query_idxs = strategy.query(6)
     print(f"query indices: {query_idxs}")
 
 
@@ -84,6 +84,7 @@ if __name__ == "__main__":
             "MinTurnUncertainty",
             "AverageTurnUncertainty",
             "MedianTurnUncertainty",
+            "Submodular",
         ],
         help="query strategy",
     )

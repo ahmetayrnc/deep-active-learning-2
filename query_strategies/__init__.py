@@ -3,7 +3,7 @@ from .uncertainty_max_turn import MaxTurnUncertainty
 from .uncertainty_min_turn import MinTurnUncertainty
 from .uncertainty_average_turn import AverageTurnUncertainty
 from .uncertainty_median_turn import MedianTurnUncertainty
-
+from .submodular import Submodular
 
 # from .margin_sampling import MarginSampling
 # from .entropy_sampling import EntropySampling

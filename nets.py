@@ -127,14 +127,18 @@ class Net:
         )
 
         all_probs = []
+        all_embeddings = []
         with torch.no_grad():
             for batch_dialogues, batch_labels in loader:
-                logits, _ = self.model(batch_dialogues)
+                logits, embeddings = self.model(batch_dialogues)
                 probs = F.softmax(logits, dim=2)
                 probs = probs.cpu().numpy()
-                all_probs.extend(probs)
 
-        return all_probs
+                embeddings = embeddings.cpu().numpy()
+                all_probs.extend(probs)
+                all_embeddings.extend(embeddings)
+
+        return all_probs, all_embeddings
 
     # def predict_prob_dropout(self, data: Dataset, n_drop: int = 10):
     #     self.clf.train()

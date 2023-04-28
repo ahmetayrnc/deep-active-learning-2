@@ -11,6 +11,7 @@ from query_strategies import (
     MinTurnUncertainty,
     AverageTurnUncertainty,
     MedianTurnUncertainty,
+    Submodular,
 )
 
 
@@ -77,5 +78,7 @@ def get_strategy(name: str) -> Type[Strategy]:
         return AverageTurnUncertainty
     elif name == "MedianTurnUncertainty":
         return MedianTurnUncertainty
+    elif name == "Submodular":
+        return Submodular
     else:
         raise NotImplementedError

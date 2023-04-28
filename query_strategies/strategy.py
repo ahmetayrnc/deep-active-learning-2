@@ -25,8 +25,12 @@ class Strategy:
         return preds
 
     def predict_prob(self, data: Dataset):
-        probs = self.net.predict_prob(data)
+        probs, _ = self.net.predict_prob(data)
         return probs
+
+    def predict_prob_with_embeddings(self, data: Dataset):
+        probs, embeddings = self.net.predict_prob(data)
+        return probs, embeddings
 
     def predict_prob_dropout(self, data: Dataset, n_drop=10):
         probs = self.net.predict_prob_dropout(data, n_drop=n_drop)
