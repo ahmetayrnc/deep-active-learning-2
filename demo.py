@@ -132,19 +132,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=1, help="random seed")
     parser.add_argument(
-        "--n_epoch", type=int, default=1, help="number of epochs to train"
-    )
-    parser.add_argument(
-        "--n_init_labeled",
-        type=int,
-        default=10,
-        help="number of init labeled samples",
-    )
-    parser.add_argument(
-        "--n_query", type=int, default=1, help="number of queries per round"
-    )
-    parser.add_argument("--n_round", type=int, default=10, help="number of rounds")
-    parser.add_argument(
         "--dataset_name",
         type=str,
         default="SWDA",
@@ -157,12 +144,37 @@ if __name__ == "__main__":
         default="RandomSampling",
         choices=[
             "RandomSampling",
-            "MaxTurnUncertainty",
-            "MinTurnUncertainty",
-            "AverageTurnUncertainty",
-            "MedianTurnUncertainty",
+            "TurnUncertainty",
+            "TurnEntropy",
+            "TurnMargin",
         ],
         help="query strategy to use",
+    )
+    parser.add_argument(
+        "--agg",
+        type=str,
+        default="max",
+        choices=["min", "max", "mean", "median"],
+        help="aggregation method to use",
+    )
+    parser.add_argument(
+        "--clipping",
+        type=int,
+        default=0,
+        help="how much to clip the output of the network",
+    )
+    parser.add_argument(
+        "--n_epoch", type=int, default=1, help="number of epochs to train"
+    )
+    parser.add_argument(
+        "--n_init_labeled",
+        type=int,
+        default=10,
+        help="number of init labeled samples",
+    )
+    parser.add_argument("--n_round", type=int, default=10, help="number of rounds")
+    parser.add_argument(
+        "--n_query", type=int, default=1, help="number of queries per round"
     )
 
     args = parser.parse_args()

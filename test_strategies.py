@@ -53,7 +53,13 @@ def main(args: dict) -> pd.DataFrame:
     print(f"Network loaded.")
 
     print("Loading strategy...")
-    strategy = get_strategy(args["strategy_name"])(dataset, net)  # load strategy
+    strategy = get_strategy(
+        args["strategy_name"],
+        dataset,
+        net,
+        args["agg"],
+        args["clipping"],
+    )  # load strategy
     print(f"Strategy loaded.")
 
     # start experiment
@@ -72,7 +78,7 @@ if __name__ == "__main__":
         type=str,
         default="SWDA",
         choices=["SWDA", "DYDA", "KPN"],
-        help="dataset",
+        help="dataset to use",
     )
     parser.add_argument(
         "--strategy_name",
@@ -80,13 +86,37 @@ if __name__ == "__main__":
         default="RandomSampling",
         choices=[
             "RandomSampling",
-            "MaxTurnUncertainty",
-            "MinTurnUncertainty",
-            "AverageTurnUncertainty",
-            "MedianTurnUncertainty",
-            "Submodular",
+            "TurnUncertainty",
+            "TurnEntropy",
+            "TurnMargin",
         ],
-        help="query strategy",
+        help="query strategy to use",
+    )
+    parser.add_argument(
+        "--agg",
+        type=str,
+        default="max",
+        choices=["min", "max", "mean", "median"],
+        help="aggregation method to use",
+    )
+    parser.add_argument(
+        "--clipping",
+        type=int,
+        default=0,
+        help="how much to clip the output of the network",
+    )
+    parser.add_argument(
+        "--n_epoch", type=int, default=1, help="number of epochs to train"
+    )
+    parser.add_argument(
+        "--n_init_labeled",
+        type=int,
+        default=10,
+        help="number of init labeled samples",
+    )
+    parser.add_argument("--n_round", type=int, default=10, help="number of rounds")
+    parser.add_argument(
+        "--n_query", type=int, default=1, help="number of queries per round"
     )
 
     args = parser.parse_args()
