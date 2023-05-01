@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import collections
 import numpy as np
 import torch
 from data import Data
@@ -12,6 +13,8 @@ from transformers import logging as transformers_logging
 
 
 def main(args: dict) -> pd.DataFrame:
+    args = collections.defaultdict(lambda: None, args)
+
     print("[INFO] Running experiment with the following arguments:")
     pprint(args)
 

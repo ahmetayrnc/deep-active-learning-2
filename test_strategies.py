@@ -1,4 +1,5 @@
 import argparse
+import collections
 import numpy as np
 import torch
 from data import Data
@@ -12,6 +13,8 @@ from utils import default_params
 
 
 def main(args: dict) -> pd.DataFrame:
+    args = collections.defaultdict(lambda: None, args)
+
     print("[INFO] Running experiment with the following arguments:")
     pprint(args)
 
