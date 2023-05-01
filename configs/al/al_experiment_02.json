@@ -1,46 +1,46 @@
 [
     {
-        "n_epoch": 5,
+        "n_epoch": 4,
         "n_round": 100,
         "n_query": 1,
         "n_init_labeled": 10,
-        "dataset_name": "SWDA",
+        "dataset_name": "DYDA",
         "strategy_name": "RandomSampling",
         "seed": 1
     },
     {
-        "n_epoch": 5,
+        "n_epoch": 4,
         "n_round": 100,
         "n_query": 1,
         "n_init_labeled": 10,
-        "dataset_name": "SWDA",
+        "dataset_name": "DYDA",
         "strategy_name": "MaxTurnUncertainty",
         "seed": 1
     },
     {
-        "n_epoch": 5,
+        "n_epoch": 4,
         "n_round": 100,
         "n_query": 1,
         "n_init_labeled": 10,
-        "dataset_name": "SWDA",
+        "dataset_name": "DYDA",
         "strategy_name": "MinTurnUncertainty",
         "seed": 1
     },
     {
-        "n_epoch": 5,
+        "n_epoch": 4,
         "n_round": 100,
         "n_query": 1,
         "n_init_labeled": 10,
-        "dataset_name": "SWDA",
+        "dataset_name": "DYDA",
         "strategy_name": "AverageTurnUncertainty",
         "seed": 1
     },
     {
-        "n_epoch": 5,
+        "n_epoch": 4,
         "n_round": 100,
         "n_query": 1,
         "n_init_labeled": 10,
-        "dataset_name": "SWDA",
+        "dataset_name": "DYDA",
         "strategy_name": "MedianTurnUncertainty",
         "seed": 1
     }

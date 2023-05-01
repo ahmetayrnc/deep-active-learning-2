@@ -45,7 +45,13 @@ def main(args: dict) -> pd.DataFrame:
     # load network and strategy
     print("Loading network and strategy...")
     net = get_net(name=args["dataset_name"], device=device, n_epoch=args["n_epoch"])
-    strategy = get_strategy(args["strategy_name"])(dataset, net)  # load strategy
+    strategy = get_strategy(
+        args["strategy_name"],
+        dataset,
+        net,
+        args["agg"],
+        args["clipping"],
+    )
     print(f"Network and strategy loaded.")
 
     # start experiment

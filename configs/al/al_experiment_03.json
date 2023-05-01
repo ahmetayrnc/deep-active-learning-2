@@ -1,0 +1,33 @@
+[
+    {
+        "seed": 1,
+        "dataset_name": "KPN",
+        "strategy_name": "RandomSampling",
+        "n_epoch": 1,
+        "n_init_labeled": 23,
+        "n_round": 110,
+        "n_query": 4
+    },
+    {
+        "seed": 1,
+        "dataset_name": "KPN",
+        "strategy_name": "TurnUncertainty",
+        "agg": "max",
+        "clipping": 5,
+        "n_epoch": 1,
+        "n_init_labeled": 23,
+        "n_round": 110,
+        "n_query": 4
+    },
+    {
+        "seed": 1,
+        "dataset_name": "KPN",
+        "strategy_name": "TurnUncertainty",
+        "agg": "max",
+        "clipping": 0,
+        "n_epoch": 1,
+        "n_init_labeled": 23,
+        "n_round": 110,
+        "n_query": 4
+    }
+]

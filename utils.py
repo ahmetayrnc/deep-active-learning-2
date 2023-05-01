@@ -1,18 +1,11 @@
 from typing import Tuple, Type
 from SequentialSentenceClassifier import SequentialSentenceClassifier
-from data import MyDataset, get_KPN, get_SWDA, get_DYDA
+from data import Data, MyDataset, get_KPN, get_SWDA, get_DYDA
 from nets import Net, Params
 from handlers import DialogueDataset
 from query_strategies.strategy import Strategy
 from torch.utils.data import Dataset
-from query_strategies import (
-    RandomSampling,
-    MaxTurnUncertainty,
-    MinTurnUncertainty,
-    AverageTurnUncertainty,
-    MedianTurnUncertainty,
-    Submodular,
-)
+from query_strategies import RandomSampling, TurnUncertainty, TurnEntropy, TurnMargin
 
 
 default_params: Params = {
@@ -67,18 +60,20 @@ def get_net(name: str, device: str, n_epoch: int, params: Params = None) -> Net:
     return Net(SequentialSentenceClassifier, params[name], device, n_epoch)
 
 
-def get_strategy(name: str) -> Type[Strategy]:
+def get_strategy(
+    name: str,
+    dataset: Data,
+    net: Net,
+    agg: str,
+    clipping: int,
+) -> Type[Strategy]:
     if name == "RandomSampling":
-        return RandomSampling
-    elif name == "MaxTurnUncertainty":
-        return MaxTurnUncertainty
-    elif name == "MinTurnUncertainty":
-        return MinTurnUncertainty
-    elif name == "AverageTurnUncertainty":
-        return AverageTurnUncertainty
-    elif name == "MedianTurnUncertainty":
-        return MedianTurnUncertainty
-    elif name == "Submodular":
-        return Submodular
+        return RandomSampling(dataset, net)
+    elif name == "TurnUncertainty":
+        return TurnUncertainty(dataset, net, agg, clipping)
+    elif name == "TurnEntropy":
+        return TurnEntropy(dataset, net, agg, clipping)
+    elif name == "TurnMargin":
+        return TurnMargin(dataset, net, agg, clipping)
     else:
         raise NotImplementedError
