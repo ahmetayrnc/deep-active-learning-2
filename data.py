@@ -2,9 +2,11 @@ import os
 from typing import List, Tuple, Type, TypedDict
 import numpy as np
 from torch.utils.data import Dataset
-from datasets import load_dataset, load_from_disk, Dataset as HF_Dataset
+from datasets import load_dataset, load_from_disk, DatasetDict, Dataset as HF_Dataset
 import pandas as pd
 from sklearn.metrics import classification_report
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
 
 
 class Metrics(TypedDict):
@@ -90,7 +92,15 @@ def convert(
         turns = group_df[x].tolist()
         labels = group_df[y].tolist()
 
-        return turns, labels
+        # Add [ACTOR1] and [ACTOR2] tags to the turns
+        tagged_turns = []
+        for i, turn in enumerate(turns):
+            if i % 2 == 0:  # Even turn indices correspond to the first speaker
+                tagged_turns.append("[ACTOR1] " + turn)
+            else:  # Odd turn indices correspond to the second speaker
+                tagged_turns.append("[ACTOR2] " + turn)
+
+        return tagged_turns, labels
 
     if not isinstance(dataset, pd.DataFrame):
         df = dataset.to_pandas()
@@ -151,3 +161,49 @@ def get_SWDA() -> Tuple[MyDataset, MyDataset]:
 
 def get_DYDA() -> Tuple[MyDataset, MyDataset]:
     return get_silicone_dataset("dyda_da")
+
+
+def convert_kpn_data():
+    # read the csv
+    df = pd.read_csv("kpn.csv", index_col=0)
+
+    # remove the index
+    df = df.reset_index(drop=True)
+
+    # drop the unnecessary columns
+    df = df.drop(columns=["segments"])
+
+    # remove the brackets from the dialogue acts
+    df["dialogue_acts"] = df["dialogue_acts"].apply(lambda x: x.strip("[]"))
+
+    # encode the labels
+    le = LabelEncoder()
+    df["label"] = le.fit_transform(df["dialogue_acts"])
+
+    print(le.classes_)
+
+    # sort the turns by turn order
+    df = (
+        df.groupby("conversation_id", group_keys=True)
+        .apply(lambda x: x.sort_values(by=["order"]))
+        .reset_index(drop=True)
+    )
+
+    # create the nested structure
+    df = df.groupby("conversation_id").agg(list)
+
+    # remove the conversations with more than 4000 tokens
+    total_length = lambda text_list: sum([len(text) for text in text_list])
+    df = df[df["text"].apply(total_length) / 4 < 4000]
+
+    # split the data into train and test
+    train_data, test_data = train_test_split(df, test_size=0.1, random_state=42)
+    print(train_data.shape, test_data.shape)
+
+    # create the dataset dict
+    train_dataset = HF_Dataset.from_pandas(train_data)
+    test_dataset = HF_Dataset.from_pandas(test_data)
+    dataset_dict = DatasetDict({"train": train_dataset, "test": test_dataset})
+
+    os.makedirs("data/kpn", exist_ok=True)
+    dataset_dict.save_to_disk("data/kpn")
