@@ -1,20 +1,14 @@
 [
     {
-        "n_epoch": 8,
+        "n_epoch": 5,
         "fraction": 1,
         "dataset_name": "SWDA",
         "seed": 1
     },
     {
-        "n_epoch": 8,
+        "n_epoch": 5,
         "fraction": 1,
         "dataset_name": "DYDA",
-        "seed": 1
-    },
-    {
-        "n_epoch": 8,
-        "fraction": 1,
-        "dataset_name": "KPN",
         "seed": 1
     }
 ]

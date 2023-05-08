@@ -4,7 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from data import Data
 from nets import Net
-from .strategy import Strategy
+from ..strategy import Strategy
 
 
 # Define the submodular function for informativeness and diversity

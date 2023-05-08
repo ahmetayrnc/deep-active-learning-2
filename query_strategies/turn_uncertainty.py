@@ -3,21 +3,9 @@ from .strategy import Strategy
 
 
 class TurnUncertainty(Strategy):
-    def __init__(self, dataset, net, aggregation="max", ignore_top_k_percent: int = 5):
+    def __init__(self, dataset, net, ignore_top_k_percent: int = 5):
         super(TurnUncertainty, self).__init__(dataset, net)
         self.ignore_top_k_percent = ignore_top_k_percent
-
-        # Aggregate the entropies for each dialogue based on the specified method
-        if aggregation == "max":
-            self.agg = np.max
-        elif aggregation == "min":
-            self.agg = np.min
-        elif aggregation == "mean":
-            self.agg = np.mean
-        elif aggregation == "median":
-            self.agg = np.median
-        else:
-            self.agg = np.max
 
     def query(self, n):
         # Get the indices and data of the unlabeled dialogues from the dataset
@@ -43,7 +31,8 @@ class TurnUncertainty(Strategy):
 
         # Compute the aggregated uncertainty for each dialogue
         aggreagated_uncertainties = [
-            self.agg(dialogue_uncertainties) for dialogue_uncertainties in uncertainties
+            np.exp(np.mean(np.log(dialogue_uncertainties)))
+            for dialogue_uncertainties in uncertainties
         ]
 
         # Select the indices of the top n dialogues with the highest aggregated uncertainties

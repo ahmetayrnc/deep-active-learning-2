@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
-from .strategy import Strategy
+from ..strategy import Strategy
 from tqdm import tqdm
 
 

@@ -5,7 +5,13 @@ from nets import Net, Params
 from handlers import DialogueDataset
 from query_strategies.strategy import Strategy
 from torch.utils.data import Dataset
-from query_strategies import RandomSampling, TurnUncertainty, TurnEntropy, TurnMargin
+from query_strategies import (
+    RandomSampling,
+    TurnUncertainty,
+    TotalTurnUncertainty,
+    TurnEntropy,
+    TotalTurnEntropy,
+)
 
 
 default_params: Params = {
@@ -64,16 +70,17 @@ def get_strategy(
     name: str,
     dataset: Data,
     net: Net,
-    agg: str,
     clipping: int,
 ) -> Type[Strategy]:
     if name == "RandomSampling":
         return RandomSampling(dataset, net)
     elif name == "TurnUncertainty":
-        return TurnUncertainty(dataset, net, agg, clipping)
+        return TurnUncertainty(dataset, net, clipping)
+    elif name == "TotalTurnUncertainty":
+        return TotalTurnUncertainty(dataset, net, clipping)
     elif name == "TurnEntropy":
-        return TurnEntropy(dataset, net, agg, clipping)
-    elif name == "TurnMargin":
-        return TurnMargin(dataset, net, agg, clipping)
+        return TurnEntropy(dataset, net, clipping)
+    elif name == "TotalTurnEntropy":
+        return TotalTurnEntropy(dataset, net, clipping)
     else:
         raise NotImplementedError

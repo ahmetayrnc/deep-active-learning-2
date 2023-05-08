@@ -3,9 +3,9 @@ from .strategy import Strategy
 from scipy.stats import entropy
 
 
-class TurnEntropy(Strategy):
+class TotalTurnEntropy(Strategy):
     def __init__(self, dataset, net, ignore_top_k_percent: int = 5):
-        super(TurnEntropy, self).__init__(dataset, net)
+        super(TotalTurnEntropy, self).__init__(dataset, net)
         self.ignore_top_k_percent = ignore_top_k_percent
 
     def query(self, n):
@@ -31,7 +31,7 @@ class TurnEntropy(Strategy):
 
         # Aggregate the entropies for each dialogue based on the specified method
         aggregated_entropies = [
-            np.mean(dialogue_entropies) for dialogue_entropies in entropies
+            np.sum(dialogue_entropies) for dialogue_entropies in entropies
         ]
 
         # Select the indices of the top n dialogues with the highest aggregated entropies

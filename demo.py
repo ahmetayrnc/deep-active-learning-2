@@ -52,7 +52,6 @@ def main(args: dict) -> pd.DataFrame:
         args["strategy_name"],
         dataset,
         net,
-        args["agg"],
         args["clipping"],
     )
     print(f"Network and strategy loaded.")
@@ -148,17 +147,11 @@ if __name__ == "__main__":
         choices=[
             "RandomSampling",
             "TurnUncertainty",
+            "TotalTurnUncertainty",
             "TurnEntropy",
-            "TurnMargin",
+            "TotalTurnEntropy",
         ],
         help="query strategy to use",
-    )
-    parser.add_argument(
-        "--agg",
-        type=str,
-        default="max",
-        choices=["min", "max", "mean", "median"],
-        help="aggregation method to use",
     )
     parser.add_argument(
         "--clipping",
