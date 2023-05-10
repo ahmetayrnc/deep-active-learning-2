@@ -38,7 +38,7 @@ def array_statistics(arr, ax_kde: Axes, title: str):
     return ax_kde, stats_data
 
 
-def display_dataset_statistics(dataset: MyDataset):
+def display_dataset_statistics(dataset: MyDataset, dataset_name: str):
     # turn statistics in terms of chars
     turn_lengths = []
     for dialogue in dataset[0]:
@@ -68,6 +68,7 @@ def display_dataset_statistics(dataset: MyDataset):
         2, 3, figsize=(18, 7), gridspec_kw={"height_ratios": [20, 3]}
     )
     plt.subplots_adjust(wspace=0.3, hspace=0.3)
+    fig.suptitle(f"Dataset Statistics ({dataset_name})", fontsize=16)
 
     column_labels = [
         "Mean",
