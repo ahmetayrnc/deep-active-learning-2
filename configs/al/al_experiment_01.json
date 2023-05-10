@@ -1,47 +1,42 @@
 [
     {
-        "n_epoch": 5,
-        "n_round": 100,
-        "n_query": 1,
-        "n_init_labeled": 10,
+        "seed": 1,
         "dataset_name": "SWDA",
-        "strategy_name": "RandomSampling",
-        "seed": 1
+        "strategy_name": "TotalTurnUncertainty",
+        "clipping": 0,
+        "n_epoch": 1,
+        "n_init_labeled": 10,
+        "n_round": 40,
+        "n_query": 5
     },
     {
-        "n_epoch": 5,
-        "n_round": 100,
-        "n_query": 1,
-        "n_init_labeled": 10,
+        "seed": 1,
         "dataset_name": "SWDA",
-        "strategy_name": "MaxTurnUncertainty",
-        "seed": 1
+        "strategy_name": "TotalTurnEntropy",
+        "clipping": 0,
+        "n_epoch": 1,
+        "n_init_labeled": 10,
+        "n_round": 40,
+        "n_query": 5
     },
     {
-        "n_epoch": 5,
-        "n_round": 100,
-        "n_query": 1,
-        "n_init_labeled": 10,
+        "seed": 1,
         "dataset_name": "SWDA",
-        "strategy_name": "MinTurnUncertainty",
-        "seed": 1
+        "strategy_name": "TurnUncertainty",
+        "clipping": 0,
+        "n_epoch": 1,
+        "n_init_labeled": 10,
+        "n_round": 40,
+        "n_query": 5
     },
     {
-        "n_epoch": 5,
-        "n_round": 100,
-        "n_query": 1,
-        "n_init_labeled": 10,
+        "seed": 1,
         "dataset_name": "SWDA",
-        "strategy_name": "AverageTurnUncertainty",
-        "seed": 1
-    },
-    {
-        "n_epoch": 5,
-        "n_round": 100,
-        "n_query": 1,
+        "strategy_name": "TurnEntropy",
+        "clipping": 0,
+        "n_epoch": 1,
         "n_init_labeled": 10,
-        "dataset_name": "SWDA",
-        "strategy_name": "MedianTurnUncertainty",
-        "seed": 1
+        "n_round": 40,
+        "n_query": 5
     }
 ]

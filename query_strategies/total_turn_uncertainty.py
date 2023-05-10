@@ -31,8 +31,7 @@ class TotalTurnUncertainty(Strategy):
 
         # Compute the aggregated uncertainty for each dialogue
         aggreagated_uncertainties = [
-            np.exp(np.sum(np.log(dialogue_uncertainties)))
-            for dialogue_uncertainties in uncertainties
+            np.sum(dialogue_uncertainties) for dialogue_uncertainties in uncertainties
         ]
 
         # Select the indices of the top n dialogues with the highest aggregated uncertainties
