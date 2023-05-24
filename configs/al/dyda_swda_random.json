@@ -1,0 +1,22 @@
+[
+    {
+        "seed": 1,
+        "dataset_name": "DYDA",
+        "strategy_name": "RandomSampling",
+        "clipping": 0,
+        "n_epoch": 1,
+        "n_init_labeled": 111,
+        "n_round": 40,
+        "n_query": 56
+    },
+    {
+        "seed": 1,
+        "dataset_name": "SWDA",
+        "strategy_name": "RandomSampling",
+        "clipping": 0,
+        "n_epoch": 1,
+        "n_init_labeled": 10,
+        "n_round": 40,
+        "n_query": 5
+    }
+]

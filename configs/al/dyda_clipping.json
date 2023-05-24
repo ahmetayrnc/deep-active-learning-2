@@ -1,0 +1,42 @@
+[
+    {
+        "seed": 1,
+        "dataset_name": "DYDA",
+        "strategy_name": "TotalTurnUncertainty",
+        "clipping": 5,
+        "n_epoch": 1,
+        "n_init_labeled": 111,
+        "n_round": 40,
+        "n_query": 56
+    },
+    {
+        "seed": 1,
+        "dataset_name": "DYDA",
+        "strategy_name": "TotalTurnEntropy",
+        "clipping": 5,
+        "n_epoch": 1,
+        "n_init_labeled": 111,
+        "n_round": 40,
+        "n_query": 56
+    },
+    {
+        "seed": 1,
+        "dataset_name": "DYDA",
+        "strategy_name": "TurnUncertainty",
+        "clipping": 5,
+        "n_epoch": 1,
+        "n_init_labeled": 111,
+        "n_round": 40,
+        "n_query": 56
+    },
+    {
+        "seed": 1,
+        "dataset_name": "DYDA",
+        "strategy_name": "TurnEntropy",
+        "clipping": 5,
+        "n_epoch": 1,
+        "n_init_labeled": 111,
+        "n_round": 40,
+        "n_query": 56
+    }
+]

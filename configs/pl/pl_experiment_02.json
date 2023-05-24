@@ -1,6 +1,6 @@
 [
     {
-        "n_epoch": 8,
+        "n_epoch": 5,
         "fraction": 1,
         "dataset_name": "KPN",
         "seed": 1

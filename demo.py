@@ -126,6 +126,7 @@ def main(args: dict) -> pd.DataFrame:
     results = pd.DataFrame(results)
     results = results.assign(startdate=startdate, experiment=experiment_name)
 
+    results.to_csv(f"results/{experiment_name}.csv", index=False)
     return results
 
 
